@@ -1,10 +1,13 @@
 <template>
-  <div>
+  <div class="min-h-screen bg-gray-50">
     <NavBar />
-    <router-view />
+
+    <KeepAlive>
+  <router-view />
+</KeepAlive>
   </div>
 </template>
 
 <script setup>
-import NavBar from './components/NavBar.vue'
+import NavBar from '/src/components/NavBar.vue'
 </script>

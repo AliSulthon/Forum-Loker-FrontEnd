@@ -1,7 +1,20 @@
 <template>
-  <div class="card" @click="$router.push(`/communities/${community.id}`)">
-    <h3>{{ community.name }}</h3>
-    <p>{{ community.description }}</p>
+  <div
+  class="p-5 rounded-2xl border border-primary shadow-sm bg-white 
+         hover:shadow-md hover:border-primary-light 
+         transition-transform transform hover:scale-105 duration-200 cursor-pointer"
+  @click="$emit('click')"
+>
+    <!-- Nama komunitas -->
+    <h2 class="text-xl font-semibold text-black mb-1 line-clamp-1">
+      {{ community.name }}
+    </h2>
+
+    <!-- Deskripsi -->
+    <p class="text-base text-gray-700 line-clamp-2">
+      {{ community.description }}
+    </p>
+
   </div>
 </template>
 
@@ -10,7 +23,3 @@ defineProps({
   community: Object
 });
 </script>
-
-<style scoped>
-.card { padding: 16px; border: 1px solid #aaa; margin-bottom: 10px; cursor: pointer; }
-</style>

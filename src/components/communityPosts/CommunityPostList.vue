@@ -1,13 +1,16 @@
 <template>
-  <CommunityPostCard
-    v-for="p in posts"
-    :key="p.id"
-    :post="p"
-  />
+  <div class="space-y-5">
+    <CommunityPostCard
+      v-for="item in posts"
+      :key="item.id"
+      :post="item"
+      @click="$emit('select', item)"
+    />
+  </div>
 </template>
 
 <script setup>
-import CommunityPostCard from "./CommunityPostCard.vue";
+import CommunityPostCard from './CommunityPostCard.vue';
 
 defineProps({
   posts: Array

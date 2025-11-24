@@ -5,48 +5,52 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+  <title>Forum Loker</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap"
     rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Science+Gothic:wght@100..900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind v4 CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <title>Forum Loker</title>
+
+  <!-- Tailwind Custom Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            headline: "#000000",
+            detail: "#929292",
+            caption: "#E9E9E9",
+            base: "#FFFFFF",
+            blueLight: "#97DFF4",
+            bluePrimary: "#14BEF0",
+            blueHeadline: "#2AA8FF",
+            primary: "#2AA8FF",
+            secondary: "#8E9C78",
+          },
+          fontFamily: {
+            sans: ["Plus Jakarta Sans", "sans-serif"],
+            namaApp: ["Science Gothic", "serif"],
+          }
+        }
+      }
+    }
+  </script>
+
   <style>
     body {
-      font-family: 'Plus Jakarta Sans', serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f7f7f7;
     }
   </style>
-
 </head>
 
 <body>
   <div id="app"></div>
   <script type="module" src="/src/main.js"></script>
 </body>
-
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          primary: {
-            light: '#82CEFF',
-            DEFAULT: '#2AA8FF',
-            dark: '#0077CC',
-          },
-          secondary: {
-            light: '#A7B28E',
-            DEFAULT: '#8E9C78',
-            dark: '#69755C',
-          }
-        },
-      },
-      fontFamily: {
-        sans: ['Crimson Text', 'serif'],
-        namaApp: ['Science Gothic', 'serif'], // override default sans
-      }
-    }
-  }
-</script>
-
 
 </html>

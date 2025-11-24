@@ -4,7 +4,10 @@
       v-for="item in posts"
       :key="item.id"
       :post="item"
+      :currentUserId="currentUserId"
       @click="$emit('select', item)"
+      @edit="$emit('edit', item)"
+      @delete="$emit('delete', item)"
     />
   </div>
 </template>
@@ -13,6 +16,7 @@
 import CommunityPostCard from './CommunityPostCard.vue';
 
 defineProps({
-  posts: Array
+  posts: Array,
+  currentUserId: Number
 });
 </script>

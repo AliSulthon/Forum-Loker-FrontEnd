@@ -36,5 +36,19 @@ export const useCommunityStore = defineStore("communityStore", {
       const newId = this.communities.length + 1;
       this.communities.push({ id: newId, ...payload });
     },
+
+    updateCommunity(id, data) {
+      const index = this.communities.findIndex((c) => c.id == id);
+      if (index !== -1) {
+        this.communities[index] = {
+          ...this.communities[index],
+          ...data,
+        };
+      }
+    },
+
+    deleteCommunity(id) {
+      this.communities = this.communities.filter((c) => c.id != id);
+    },
   },
 });

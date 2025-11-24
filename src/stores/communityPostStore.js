@@ -9,8 +9,12 @@ export const useCommunityPostStore = defineStore("communityPostStore", {
   getters: {
     // Mengembalikan posts khusus community tertentu
     getByCommunity: (state) => (cid) => state.posts[cid] || [],
-    getById: (state) => (id, cid) =>
-      (state.posts[cid] || []).find((p) => p.id === id),
+
+    // FIX: Ambil post by ID dari community tertentu
+    getById: (state) => (communityId, postId) => {
+      const communityPosts = state.posts[communityId] || [];
+      return communityPosts.find((p) => p.id === postId);
+    },
   },
 
   actions: {
@@ -20,7 +24,7 @@ export const useCommunityPostStore = defineStore("communityPostStore", {
           {
             id: 1,
             community_id: communityId,
-            user_id: 3,
+            user_id: 1,
             title: "Salah masuk kantor",
             content: "Ini adalah konten dari post yaa",
             author: "Dimas",
@@ -36,7 +40,7 @@ export const useCommunityPostStore = defineStore("communityPostStore", {
             date: "18 November 2025, 14:45",
           },
         ];
-        this.posts[communityId] = dummy; // simpan dummy khusus communityId
+        this.posts[communityId] = dummy;
         this.loaded[communityId] = true;
       }
     },
@@ -52,8 +56,27 @@ export const useCommunityPostStore = defineStore("communityPostStore", {
       this.posts[cid].push({
         id: newId,
         ...payload,
-        date: formattedDate, // format tanggal konsisten
+        date: formattedDate,
       });
+    },
+
+    updatePost(communityId, postId, updatedData) {
+      if (!this.posts[communityId]) return;
+
+      const index = this.posts[communityId].findIndex((p) => p.id === postId);
+      if (index !== -1) {
+        this.posts[communityId][index] = {
+          ...this.posts[communityId][index],
+          ...updatedData,
+        };
+      }
+    },
+
+    deletePost(communityId, postId) {
+      if (!this.posts[communityId]) return;
+      this.posts[communityId] = this.posts[communityId].filter(
+        (p) => p.id !== postId
+      );
     },
 
     formatDateTime(date) {

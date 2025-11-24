@@ -2,7 +2,7 @@
   <nav class="backdrop-blur-md bg-white/70 border-b border-gray-200 sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
 
-       <!-- LEFT: Logo + Title -->
+      <!-- LEFT: Logo + Title -->
       <div class="flex items-center gap-3">
         <img 
           src="/src/assets/logo.png"
@@ -14,7 +14,6 @@
 
       <!-- CENTER: Navigation -->
       <div class="flex items-center gap-6">
-
         <!-- HOME -->
         <RouterLink 
           to="/"
@@ -74,12 +73,7 @@
         <!-- CHAT ICON -->
         <RouterLink 
           to="/chat"
-          :class="[
-            'p-2 rounded-full transition flex items-center justify-center',
-            $route.path.startsWith('/chat')
-              ? 'bg-white text-white'
-              : 'bg-white text-white hover:bg-primary-dark'
-          ]"
+          class="p-2 rounded-full transition flex items-center justify-center bg-white hover:bg-primary-dark"
         >
           <svg xmlns="http://www.w3.org/2000/svg"
             fill="none" viewBox="0 0 24 24"
@@ -93,25 +87,48 @@
           </svg>
         </RouterLink>
 
-        <!-- PROFILE ICON -->
-        <RouterLink 
-          to="/profile"
-          :class="[
-            'p-2 rounded-full transition flex items-center justify-center',
-            $route.path.startsWith('/profile')
-              ? 'bg-primary-dark text-white'
-              : 'bg-primary text-white hover:bg-primary-dark'
-          ]"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg"
-            fill="none" viewBox="0 0 24 24"
-            stroke-width="2" stroke="currentColor"
-            class="w-7 h-7">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.5 
-              20.25a8.25 8.25 0 1 1 15 0v.75H4.5v-.75z" />
-          </svg>
-        </RouterLink>
+        <!-- PROFILE DROPDOWN -->
+        <div class="relative" ref="profileRef">
+          <button 
+            @click="toggleProfile"
+            class="p-2 rounded-full transition flex items-center justify-center bg-primary text-white hover:bg-primary-dark"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg"
+              fill="none" viewBox="0 0 24 24"
+              stroke-width="2" stroke="currentColor"
+              class="w-7 h-7">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.5 
+                20.25a8.25 8.25 0 1 1 15 0v.75H4.5v-.75z" />
+            </svg>
+          </button>
+
+          <!-- POPUP MENU -->
+          <div 
+            v-if="showProfileMenu"
+            class="absolute right-0 mt-3 w-48 bg-white shadow-lg rounded-lg border border-gray-200 py-2 animate-fadeIn"
+          >
+            <RouterLink 
+              to="/profile"
+              class="block px-4 py-2 text-gray-700 hover:bg-primary hover:text-white transition"
+            >
+              My Profile
+            </RouterLink>
+
+            <RouterLink 
+              to="/settings"
+              class="block px-4 py-2 text-gray-700 hover:bg-primary hover:text-white transition"
+            >
+              Settings
+            </RouterLink>
+
+            <button 
+              class="block text-left w-full px-4 py-2 text-gray-700 hover:bg-primary hover:text-white transition"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
 
       </div>
 
@@ -120,4 +137,27 @@
 </template>
 
 <script setup>
+import { ref, onMounted, onBeforeUnmount } from "vue";
+
+const showProfileMenu = ref(false);
+const profileRef = ref(null);
+
+const toggleProfile = () => {
+  showProfileMenu.value = !showProfileMenu.value;
+};
+
+// CLOSE POPUP WHEN CLICK OUTSIDE
+const handleClickOutside = (e) => {
+  if (profileRef.value && !profileRef.value.contains(e.target)) {
+    showProfileMenu.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleClickOutside);
+});
 </script>

@@ -1,6 +1,5 @@
 <template>
-  <form class="space-y-5" @submit.prevent="handleSubmit">
-
+  <form class="space-y-5" @submit.prevent="onSubmit">
     <!-- Title -->
     <div>
       <label class="block text-base text-secondary mb-1">Title</label>
@@ -8,8 +7,10 @@
         v-model="form.title"
         type="text"
         placeholder="Enter post title"
-        class="w-full px-4 py-3 rounded-xl border border-primary focus:border-primary-light focus:ring-1 focus:ring-primary-light outline-none transition"
         required
+        maxlength="200"
+        :disabled="isLoading"
+        class="w-full px-4 py-3 rounded-xl border border-primary focus:border-primary-light focus:ring-1 focus:ring-primary-light outline-none transition"
       />
     </div>
 
@@ -19,19 +20,20 @@
       <textarea
         v-model="form.content"
         placeholder="Enter post content"
-        class="w-full px-4 py-3 rounded-xl border border-primary focus:border-primary-light focus:ring-1 focus:ring-primary-light outline-none h-32 transition"
         required
+        :disabled="isLoading"
+        class="w-full px-4 py-3 rounded-xl border border-primary focus:border-primary-light focus:ring-1 focus:ring-primary-light outline-none h-32 transition resize-none"
       ></textarea>
     </div>
 
     <!-- Submit Button -->
     <button
       type="submit"
-      class="w-full py-3 bg-primary text-white rounded-xl hover:bg-primary-light transition font-medium transform hover:scale-105 duration-200 cursor-pointer"
+      :disabled="isLoading"
+      class="w-full py-3 bg-primary text-white rounded-xl hover:bg-primary-light transition font-medium transform hover:scale-105 duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
     >
-      {{ isEdit ? "Save Changes" : "Publish Post" }}
+      {{ isLoading ? 'Loading...' : (isEdit ? "Save Changes" : "Publish Post") }}
     </button>
-
   </form>
 </template>
 
@@ -39,21 +41,17 @@
 import { reactive, computed, watch } from "vue";
 
 const props = defineProps({
-  initialData: { 
-    type: Object, 
-    default: null 
-  }
+  initialData: { type: Object, default: null },
+  isLoading: { type: Boolean, default: false }
 });
 
 const emit = defineEmits(['submit']);
 
-// Form otomatis terisi saat EDIT
 const form = reactive({
-  title: "",
-  content: ""
+  title: props.initialData?.title || "",
+  content: props.initialData?.content || ""
 });
 
-// Watch untuk update form saat initialData berubah (PENTING!)
 watch(
   () => props.initialData,
   (newData) => {
@@ -61,19 +59,17 @@ watch(
       form.title = newData.title || "";
       form.content = newData.content || "";
     } else {
-      // Reset form jika create
       form.title = "";
       form.content = "";
     }
   },
-  { immediate: true } // Jalankan segera saat component mount
+  { immediate: true }
 );
 
-// Untuk menentukan tombol
 const isEdit = computed(() => props.initialData !== null);
 
-// Handle submit
-function handleSubmit() {
-  emit('submit', { ...form });
+function onSubmit() {
+  // HTML5 required akan mencegah submit jika kosong
+  emit('submit', { title: form.title.trim(), content: form.content.trim() });
 }
 </script>

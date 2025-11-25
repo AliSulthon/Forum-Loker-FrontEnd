@@ -3,10 +3,13 @@
 
     <!-- Back Button -->
     <button
-      class="text-primary font-medium mb-6 hover:text-primary-light transition"
+      class="flex items-center gap-2 text-primary font-medium mb-6 hover:text-primary-light transition"
       @click="router.back()"
     >
-      ← Back
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+      Back
     </button>
 
     <!-- Page Title -->
@@ -15,7 +18,10 @@
     </h1>
 
     <!-- Community Form -->
-    <CommunityForm @submit="handleSubmit" class="bg-white border border-primary rounded-xl p-6 shadow-sm hover:shadow-md"/>
+    <CommunityForm 
+      @submit="handleSubmit" 
+      class="bg-white border border-primary rounded-xl p-6 shadow-sm hover:shadow-md"
+    />
     
   </div>
 </template>

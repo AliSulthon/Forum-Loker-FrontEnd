@@ -1,46 +1,65 @@
 <template>
   <div class="max-w-3xl mx-auto py-10 px-4">
-    <button class="text-primary mb-6" @click="router.back()">← Back</button>
 
-    <h1 class="text-4xl font-bold mb-6">Edit Post</h1>
+    <!-- Back Button -->
+    <button
+      class="flex items-center gap-2 text-primary font-medium mb-6 hover:text-primary-light transition"
+      @click="router.back()"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+      Back
+    </button>
 
-    <div class="bg-white border rounded-xl p-6">
-      <!-- muncul hanya kalau post sudah ketemu -->
-      <CommunityPostForm
-        v-if="post"
-        :initialData="post"
+    <!-- Page Title -->
+    <h1 class="text-4xl font-bold text-primary mb-6">Edit Community</h1>
+
+    <div class="bg-white border border-primary rounded-xl p-6 shadow-sm hover:shadow-md">
+      <!-- tampil form jika community sudah siap -->
+      <CommunityForm
+        v-if="community"
+        :initialData="community"
         @submit="handleSubmit"
       />
 
       <p v-else>Loading...</p>
     </div>
+
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useCommunityPostStore } from '../../stores/communityPostStore'
-import CommunityPostForm from '../../components/communityPosts/CommunityPostForm.vue'
+import { useCommunityStore } from '../../stores/communityStore'
+import CommunityForm from '../../components/community/CommunityForm.vue'
 
 const router = useRouter()
 const route = useRoute()
-const postStore = useCommunityPostStore()
+const communityStore = useCommunityStore()
 
-const communityId = Number(route.params.cid)
-const postId = Number(route.params.pid)
+const communityId = Number(route.params.id) // asumsi route: /communities/:id/edit
 
-// reactive getter
-const post = computed(() =>
-  postStore.getByCommunity(communityId).find(p => p.id === postId)
-)
+const community = ref(null)
 
 onMounted(async () => {
-  await postStore.fetchPosts(communityId)
+  try {
+    community.value = await communityStore.fetchCommunityById(communityId)
+
+    if (!community.value) {
+      alert("Community tidak ditemukan")
+      router.push("/communities")
+    }
+  } catch (error) {
+    console.error("Failed to fetch community:", error)
+    alert("Gagal memuat data community")
+    router.push("/communities")
+  }
 })
 
 function handleSubmit(data) {
-  postStore.updatePost(communityId, postId, data)
+  communityStore.updateCommunity(communityId, data)
   router.push(`/communities/${communityId}`)
 }
 </script>

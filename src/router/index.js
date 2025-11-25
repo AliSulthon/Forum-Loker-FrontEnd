@@ -3,6 +3,8 @@ import Login from "../views/Login.vue";
 import HomeView from "../views/HomeView.vue";
 import ProfileView from "../views/ProfileView.vue";
 import BookmarksView from "../views/BookmarksView.vue";
+import Sharing from "../views/Sharing.vue";
+import SharingDetail from "../views/SharingDetail.vue";
 import MainLayout from "../layouts/MainLayout.vue";
 
 const routes = [
@@ -13,7 +15,9 @@ const routes = [
         children: [
             { path: "", name: "home", component: HomeView },
             { path: "profile", name: "profile", component: ProfileView },
-            { path: "bookmarks", name: "bookmarks", component: BookmarksView }
+            { path: "bookmarks", name: "bookmarks", component: BookmarksView },
+            { path: "sharing", name: "sharing", component: Sharing },
+            { path: "sharing/:id", name: "SharingDetail", component: SharingDetail }
         ]
     },
 ];

@@ -116,6 +116,13 @@
             </RouterLink>
 
             <RouterLink 
+              to="/bookmarks"
+              class="block px-4 py-2 text-gray-700 hover:bg-primary hover:text-white transition"
+            >
+              Bookmarks
+            </RouterLink>
+
+            <RouterLink 
               to="/settings"
               class="block px-4 py-2 text-gray-700 hover:bg-primary hover:text-white transition"
             >
@@ -123,6 +130,7 @@
             </RouterLink>
 
             <button 
+              @click="handleLogout"
               class="block text-left w-full px-4 py-2 text-gray-700 hover:bg-primary hover:text-white transition"
             >
               Logout
@@ -138,12 +146,22 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth";
+
+const router = useRouter();
+const authStore = useAuthStore();
 
 const showProfileMenu = ref(false);
 const profileRef = ref(null);
 
 const toggleProfile = () => {
   showProfileMenu.value = !showProfileMenu.value;
+};
+
+const handleLogout = () => {
+  authStore.logout();
+  router.push("/login");
 };
 
 // CLOSE POPUP WHEN CLICK OUTSIDE

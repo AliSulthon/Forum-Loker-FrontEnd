@@ -10,7 +10,7 @@
         @click.stop
       >
         <div class="p-4 border-b">
-          <h3 class="font-semibold text-lg">{{ chatTitle }}</h3>
+          <h3 class="font-semibold text-black">{{ chatTitle }}</h3> 
           <p class="text-xs text-[#929292]">Opsi untuk chat ini</p>
         </div>
 
@@ -19,20 +19,20 @@
           <button 
             @click="togglePin" 
             :disabled="loading"
-            class="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-3 transition"
+            class="w-full text-left px-4 py-2 hover:bg-[#E9E9E9] flex items-center gap-3 transition" 
           >
-            <i :class="isPinned ? 'fa-solid fa-thumbtack text-red-500' : 'fa-solid fa-thumbtack'"></i>
-            <span>{{ isPinned ? 'Unpin Chat' : 'Pin Chat' }}</span>
+            <i :class="isPinned ? 'fa-solid fa-thumbtack text-[#2AA8FF]' : 'fa-solid fa-thumbtack text-[#929292]'"></i>
+            <span :class="{'text-black': !isPinned, 'text-[#2AA8FF]': isPinned}">{{ isPinned ? 'Unpin Chat' : 'Pin Chat' }}</span>
             <i v-if="loading && currentAction === 'pin'" class="fa-solid fa-spinner fa-spin ml-auto text-[#14BEF0]"></i>
           </button>
           
           <button 
             @click="handleMute" 
             :disabled="loading || isMuted"
-            class="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-3 transition"
+            class="w-full text-left px-4 py-2 hover:bg-[#E9E9E9] flex items-center gap-3 transition"
           >
-            <i class="fa-solid fa-bell-slash"></i>
-            <span>{{ isMuted ? 'Muted (1 Jam)' : 'Mute Chat (1 Jam)' }}</span>
+            <i :class="isMuted ? 'fa-solid fa-bell-slash text-[#929292]' : 'fa-solid fa-bell-slash text-[#929292]'"></i>
+            <span :class="{'text-black': !isMuted, 'text-[#929292]': isMuted}">{{ isMuted ? 'Muted (1 Jam)' : 'Mute Chat (1 Jam)' }}</span>
             <i v-if="loading && currentAction === 'mute'" class="fa-solid fa-spinner fa-spin ml-auto text-[#14BEF0]"></i>
           </button>
 
@@ -45,7 +45,7 @@
           >
             <i class="fa-solid fa-trash"></i>
             <span>Hapus Chat (Hanya untuk Saya)</span>
-            <i v-if="loading && currentAction === 'delete'" class="fa-solid fa-spinner fa-spin ml-auto"></i>
+            <i v-if="loading && currentAction === 'delete'" class="fa-solid fa-spinner fa-spin ml-auto text-red-600"></i>
           </button>
 
         </div>
@@ -59,6 +59,7 @@ import { ref, computed } from 'vue'
 import { useChatStore } from '@/stores/chat/useChatStore'
 
 const props = defineProps({
+// ... (props lainnya)
   isOpen: {
     type: Boolean,
     default: false
@@ -78,12 +79,12 @@ const emit = defineEmits(['update:isOpen', 'action-complete'])
 const chatStore = useChatStore()
 
 const loading = ref(false)
-const currentAction = ref(null) // Untuk mengontrol loading state per tombol
+const currentAction = ref(null) 
 
 const chatTitle = computed(() => {
-    // Logika yang sama seperti di ChatItem (ambil nama chat atau nama lawan bicara)
+    // ... (Logika chatTitle tetap sama)
     if (props.chat.name) return props.chat.name;
-    const currentUserId = chatStore.currentUserId; // Asumsi getter sudah ada di store
+    const currentUserId = chatStore.currentUserId; 
     
     if (props.chat.participants && props.chat.participants.length > 0) {
       const otherParticipant = props.chat.participants.find(
@@ -106,14 +107,12 @@ function close() {
 }
 
 // --- HANDLER LOGIC ---
-
 async function togglePin() {
     currentAction.value = 'pin';
     loading.value = true;
     try {
         const payload = { pinned: !isPinned.value };
         await chatStore.updateChatStatus(props.chat.id, payload);
-        // Setelah update, Pinia Store akan mengurutkan ulang list.
         close();
         emit('action-complete', 'Pin berhasil diubah.');
     } catch (error) {
@@ -128,7 +127,6 @@ async function handleMute() {
     currentAction.value = 'mute';
     loading.value = true;
     try {
-        // Mute untuk 1 jam dari sekarang
         const muteUntil = new Date();
         muteUntil.setHours(muteUntil.getHours() + 1);
         
@@ -153,11 +151,9 @@ async function handleDelete() {
     currentAction.value = 'delete';
     loading.value = true;
     try {
-        // Menggunakan scope 'me'
         await chatStore.deleteChat(props.chat.id, 'me'); 
         
         close();
-        // Setelah delete, store akan mengurus reset activeChat.
         emit('action-complete', 'Chat berhasil dihapus.');
 
     } catch (error) {

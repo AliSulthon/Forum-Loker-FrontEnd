@@ -1,6 +1,6 @@
 <template>
   <div class="w-full flex justify-center py-3">
-    <div class="flex items-center gap-2 text-gray-500 text-sm">
+    <div class="flex items-center gap-2 text-[#929292] text-sm">
       <span class="loader-dot"></span>
       <span class="loader-dot"></span>
       <span class="loader-dot"></span>
@@ -12,7 +12,8 @@
 .loader-dot {
   width: 6px;
   height: 6px;
-  background: #a0a0a0;
+  /* Mengganti warna dot dengan Detailed Text #929292 */
+  background: #929292; 
   border-radius: 50%;
   animation: bounce 0.6s infinite alternate;
 }

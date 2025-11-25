@@ -26,15 +26,22 @@
         class="p-2 rounded-full hover:bg-[#E9E9E9] transition"
         title="Search"
       >
-        <i class="fa-solid fa-magnifying-glass text-[#000001]"></i>
+        <img :src="searchIcon" alt="Search" class="w-5 h-5" /> 
       </button>
-    </div>
+      </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from "vue";
 import { useAuthStore } from "@/stores/auth.js";
+// --- ASUMSI: IMPORT ASSET SVG ---
+// Path ini diasumsikan benar relatif terhadap komponen Anda atau diresolve oleh alias '@/'
+import searchIcon from "@/assets/search.svg"; // <--- PENTING: Lakukan import ini!
+// Jika komponen ini berada di 'src/components/' dan aset berada di 'src/assets/', 
+// pathnya mungkin perlu disesuaikan, misalnya: '../assets/search.svg' atau menggunakan alias:
+// import searchIcon from "@/assets/search.svg"; 
+// Sesuaikan path import di atas dengan struktur folder proyek Anda yang sebenarnya.
 
 const props = defineProps({
   chat: {

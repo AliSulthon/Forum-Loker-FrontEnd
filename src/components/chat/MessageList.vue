@@ -2,7 +2,6 @@
   <div class="px-4 pt-4 flex flex-col min-h-full justify-end">
     <MessageLoader v-if="loading" />
     
-    <!-- Container untuk messages yang akan didorong ke bawah -->
     <div class="flex-1"></div>
     
     <div v-for="(message, index) in messages.filter(m => m)" :key="message.id">
@@ -32,6 +31,7 @@ import MessageBubble from "@/components/chat/MessageBubble.vue";
 import MessageLoader from "@/components/chat/MessageLoader.vue";
 
 const props = defineProps({
+// ... (props lainnya)
   messages: {
     type: Array,
     required: true,

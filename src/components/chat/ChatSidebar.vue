@@ -1,17 +1,14 @@
 <template>
   <div class="w-[340px] h-full border-r border-gray-200 bg-white flex flex-col">
     
-    <!-- Header: HANYA Search Bar (Logo dihapus) -->
     <div class="h-16 flex items-center px-4 border-b border-gray-200 bg-white gap-2">
       
-      <!-- Search Bar (Flex-1) -->
       <div class="flex-1">
         <ChatSearch
           @search="handleSearch"
         />
       </div>
 
-      <!-- Button New Chat -->
       <button
         class="p-2 rounded-full transition hover:bg-[#E9E9E9] flex-shrink-0"
         @click="openNewChat"
@@ -33,7 +30,6 @@
       </button>
     </div>
 
-    <!-- Chat List -->
     <div class="flex-1 overflow-y-auto custom-scrollbar">
       
       <div v-if="loadingSearch" class="p-4 text-[#14BEF0] text-center text-sm animate-pulse">
@@ -179,7 +175,6 @@ function handleActionComplete(message) {
     console.log("Aksi Selesai:", message); 
     // Anda mungkin ingin menambahkan toast/snackbar di sini.
 }
-
 </script>
 
 <style scoped>
@@ -187,11 +182,13 @@ function handleActionComplete(message) {
   width: 8px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #d1d5db; 
+  /* Mengganti warna scrollbar thumb */
+  background-color: #97DFF4; /* Biru Muda 1/Outline */
   border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background-color: #f3f4f6; 
+  /* Mengganti warna scrollbar track */
+  background-color: #F3F4F6; /* Warna terang dekat Abu-abu Terang #E9E9E9 */
 }
 
 .font-namaApp {

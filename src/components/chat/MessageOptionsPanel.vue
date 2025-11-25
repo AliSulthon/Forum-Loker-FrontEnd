@@ -5,16 +5,17 @@
             @click.self="$emit('close')"
         >
             <div class="bg-white rounded-lg p-6 shadow-2xl w-full max-w-sm transform transition-all">
-                <h3 class="text-lg font-bold mb-4 text-gray-800">Opsi Pesan</h3>
                 
-                <p class="text-sm text-gray-500 mb-4 italic max-h-12 overflow-hidden truncate">
+                <h3 class="text-lg font-bold mb-4 text-[#000000]">Opsi Pesan</h3> 
+                
+                <p class="text-sm text-[#929292] mb-4 italic max-h-12 overflow-hidden truncate">
                     Pesan: "{{ message?.text || 'Pesan kosong' }}"
                 </p>
 
                 <button 
                     v-if="message.type !== 'deleted'"
                     @click="$emit('edit')" 
-                    class="w-full text-left py-2 px-3 hover:bg-gray-100 rounded-md flex items-center text-blue-600 transition duration-150"
+                    class="w-full text-left py-2 px-3 hover:bg-[#E9E9E9] rounded-md flex items-center text-[#2AA8FF] transition duration-150"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-3"><path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z" /><path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z" /></svg>
                     Edit Pesan
@@ -33,7 +34,7 @@
 
                 <button 
                     @click="confirmDelete('me')" 
-                    class="w-full text-left py-2 px-3 hover:bg-gray-100 rounded-md flex items-center text-gray-500 transition duration-150"
+                    class="w-full text-left py-2 px-3 hover:bg-[#E9E9E9] rounded-md flex items-center text-[#929292] transition duration-150"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-3"><path d="M3.25 4A2.25 2.25 0 001 6.25v9.5A2.25 2.25 0 003.25 18h11.5A2.25 2.25 0 0017 15.75v-9.5A2.25 2.25 0 0014.75 4H3.25zM12 7.75a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5a.75.75 0 01.75-.75zm-3 0a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5a.75.75 0 01.75-.75z" /><path d="M2.5 3.25a.75.75 0 000 1.5h15a.75.75 0 000-1.5h-15z" /></svg>
                     Hapus untuk Saya
@@ -41,7 +42,7 @@
 
                 <button 
                     @click="$emit('close')" 
-                    class="w-full mt-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-gray-700 font-medium transition duration-150"
+                    class="w-full mt-4 py-2 bg-[#E9E9E9] hover:bg-gray-200 rounded-md text-[#000000] font-medium transition duration-150"
                 >
                     Batal
                 </button>

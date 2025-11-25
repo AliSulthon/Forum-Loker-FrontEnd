@@ -6,10 +6,8 @@
       aria-modal="true"
       role="dialog"
     >
-      <!-- Backdrop, klik untuk menutup -->
       <div class="fixed inset-0 bg-black/40" @click="close"></div>
 
-      <!-- Panel Sidebar Utama -->
       <aside
         class="ml-auto w-[360px] bg-white shadow-2xl h-full flex flex-col relative"
         @click.stop
@@ -38,7 +36,6 @@
           </button>
         </div>
 
-        <!-- Input Pencarian User -->
         <div class="p-4">
           <label class="block text-sm mb-2 text-[#929292]">
             Cari user
@@ -54,9 +51,10 @@
             />
 
             <button
-              class="px-3 py-2 rounded-xl text-white transition bg-[#2AA8FF] hover:bg-[#14BEF0] disabled:opacity-50"
               @click="doSearch"
               :disabled="loading || q.length < 1"
+              class="px-3 py-2 rounded-xl text-white transition disabled:opacity-50"
+              :class="loading || q.length < 1 ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#2AA8FF] hover:bg-[#14BEF0]'"
             >
               <svg v-if="loading" class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -67,16 +65,14 @@
           </div>
         </div>
 
-        <!-- Hasil Pencarian -->
         <div class="flex-1 overflow-y-auto custom-scrollbar">
           <div v-if="loading" class="p-4">
-            <!-- Skeleton Loader -->
             <div class="animate-pulse space-y-4">
               <div v-for="i in 3" :key="i" class="flex items-center space-x-3">
-                <div class="h-10 w-10 bg-gray-200 rounded-full"></div>
+                <div class="h-10 w-10 bg-[#E9E9E9] rounded-full"></div>
                 <div class="flex-1 space-y-1">
-                  <div class="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                  <div class="h-4 bg-[#E9E9E9] rounded w-3/4"></div>
+                  <div class="h-3 bg-[#E9E9E9] rounded w-1/2"></div>
                 </div>
               </div>
             </div>
@@ -104,14 +100,11 @@
               @click="selectUser(user)"
             >
               
-              <!-- KOMPONEN INISIAL BARU PENGGANTI <img> -->
               <div
                 class="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm bg-[#14BEF0] flex-shrink-0"
               >
                 {{ getUserInitials(user.fullname) }}
               </div>
-              <!-- AKHIR KOMPONEN INISIAL -->
-
               <div class="flex-1">
                 <div class="text-sm font-medium text-[#000000]">
                   {{ user.fullname || user.username }}
@@ -128,7 +121,6 @@
           </ul>
         </div>
 
-        <!-- Footer / Error Display (DIPERBAIKI) -->
         <div class="p-3 border-t border-gray-200 text-sm">
           <div v-if="error" class="text-red-600 font-medium">
             {{ error }}
@@ -143,6 +135,7 @@
 </template>
 
 <script setup>
+// ... (script setup tidak ada perubahan, hanya di bagian template)
 import { ref, watch } from 'vue';
 import axios from '@/services/api';
 import { useRouter } from 'vue-router';
@@ -310,10 +303,11 @@ async function selectUser(user) {
   width: 8px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #d1d5db; /* gray-300 */
+  /* Menggunakan warna netral/outline */
+  background-color: #d1d5db; /* gray-300 - Biarkan ini atau gunakan #97DFF4 untuk aksen */
   border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background-color: #f3f4f6; /* gray-100 */
+  background-color: #f3f4f6; /* gray-100 - Biarkan ini atau gunakan #E9E9E9 */
 }
 </style>

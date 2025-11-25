@@ -56,8 +56,8 @@
         :class="{'opacity-100': active}"
         title="Opsi Chat"
     >
-        <i class="fa-solid fa-ellipsis-vertical text-[#929292]"></i>
-    </button>
+      <img :src="editIcon" alt="Edit Options" class="w-5 h-5 text-[#929292]" />
+      </button>
   </div>
 </template>
 
@@ -65,7 +65,14 @@
 import { computed } from "vue";
 import { useAuthStore } from "@/stores/auth";
 
+// --- PENTING: IMPORT ASSET SVG BARU ---
+// Sesuaikan path import ini agar sesuai dengan struktur folder proyek Anda.
+import editIcon from "@/assets/edit.svg"; 
+
 const props = defineProps({
+// ... (props lain tetap sama)
+// ... (props lain tetap sama)
+// ... (props lain tetap sama)
   chat: {
     type: Object,
     required: true,
@@ -81,12 +88,12 @@ defineEmits(["click", "open-menu"]);
 const authStore = useAuthStore();
 const currentUserId = computed(() => authStore.user?.id);
 
-// --- 1. LOGIKA UNREAD COUNT ---
+// --- LOGIKA COMPUTED PROPERTI LAINNYA TETAP SAMA ---
+
 const unreadCount = computed(() => {
   return props.chat.unread_count || 0;
 });
-
-// --- LOGIKA PINNED STATUS (DIKOREKSI) ---
+// ... (kode computed lainnya tetap sama)
 const isPinned = computed(() => {
     if (!props.chat.participants) return false;
 
@@ -97,7 +104,6 @@ const isPinned = computed(() => {
     return participant?.pinned || false;
 });
 
-// --- LOGIKA MUTED STATUS (DITAMBAHKAN) ---
 const isMuted = computed(() => {
     if (!props.chat.participants) return false;
     
@@ -110,7 +116,7 @@ const isMuted = computed(() => {
     return participant?.muted || false; 
 });
 
-// --- 2. LOGIKA NAMA (USERNAME) ---
+
 const displayTitle = computed(() => {
   if (props.chat.name) return props.chat.name; 
   
@@ -126,13 +132,13 @@ const displayTitle = computed(() => {
   return "Chat"; 
 });
 
-// --- 3. LOGIKA INISIAL (Huruf Pertama) ---
+
 const chatInitial = computed(() => {
   const title = displayTitle.value || "?";
   return Array.from(title)[0].toUpperCase();
 });
 
-// --- 4. FORMAT WAKTU (WIB) ---
+
 const displayTime = computed(() => {
   const dateString = props.chat.last_message?.created_at || props.chat.updated_at;
   if (!dateString) return "";
@@ -145,7 +151,7 @@ const displayTime = computed(() => {
   }).format(date);
 });
 
-// --- 5. LOGIKA ISI PESAN TERAKHIR ---
+
 const displayLastMessage = computed(() => {
   const msg = props.chat.last_message;
   

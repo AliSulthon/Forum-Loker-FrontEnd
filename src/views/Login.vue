@@ -2,7 +2,7 @@
   <div class="min-h-screen flex items-center justify-center bg-gray-50 relative p-4 font-sans overflow-hidden">
     
     <div class="absolute inset-0 z-0 opacity-40 pointer-events-none" 
-         style="background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 24px 24px;">
+          style="background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 24px 24px;">
     </div>
 
     <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
@@ -98,19 +98,19 @@
           </div>
 
           <div class="flex items-center justify-between text-sm">
-             <label class="flex items-center text-detail cursor-pointer hover:text-headline transition-colors group">
+              <label class="flex items-center text-detail cursor-pointer hover:text-headline transition-colors group">
                 <input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-blueHeadline focus:ring-blueHeadline accent-blueHeadline cursor-pointer">
                 <span class="ml-2 font-medium group-hover:text-headline transition-colors">Ingat Saya</span>
-             </label>
-             <a href="#" class="text-blueHeadline font-bold hover:text-bluePrimary hover:underline transition-colors">Lupa Password?</a>
+              </label>
+              <a href="#" class="text-blueHeadline font-bold hover:text-bluePrimary hover:underline transition-colors">Lupa Password?</a>
           </div>
 
           <button
             type="submit"
             :disabled="isLoading"
             class="w-full py-4 rounded-xl bg-blueHeadline text-base font-bold text-lg tracking-wide text-white
-                   hover:bg-bluePrimary hover:shadow-lg hover:shadow-blueHeadline/40 hover:-translate-y-0.5
-                   transition-all duration-300 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                    hover:bg-bluePrimary hover:shadow-lg hover:shadow-blueHeadline/40 hover:-translate-y-0.5
+                    transition-all duration-300 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
           >
             <svg v-if="isLoading" class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -138,7 +138,7 @@
 <script setup>
 import { ref } from "vue"
 import { useRouter } from "vue-router"
-import { loginUser } from "@/services/auth.js"
+import { useAuthStore } from "@/stores/auth.js" // <-- IMPORT PINIA STORE
 
 // STATE
 const email = ref("")
@@ -148,6 +148,9 @@ const isLoading = ref(false)
 const errorMessage = ref("")
 
 const router = useRouter()
+const authStore = useAuthStore() // <-- INSTANTIATE PINIA STORE
+
+// Hapus import { loginUser } dari "@/services/auth.js"
 
 // HANDLE LOGIN
 async function handleLogin() {
@@ -155,16 +158,35 @@ async function handleLogin() {
   errorMessage.value = ""
 
   try {
-    const res = await loginUser(email.value, password.value)
+    // Pastikan Anda memanggil action 'login' dari Pinia Store
+    await authStore.login({
+      email: email.value,
+      password: password.value,
+    })
 
-    if (!res.error) {
-      localStorage.setItem("auth_token", res.data.access_token)
-      localStorage.setItem("user_info", JSON.stringify(res.data.user))
-      router.push("/dashboard")
-    }
+    // Jika berhasil, redirect
+    router.push("/chats")
 
   } catch (err) {
-    errorMessage.value = err.response?.data?.message || "Login gagal."
+    console.error('Login error:', err)
+    
+    const data = err.response?.data;
+
+    // Cek apakah status adalah 422 dan memiliki detail error validasi
+    if (data && err.response?.status === 422 && data.errors) {
+      
+      // Ambil pesan error pertama untuk field yang pertama kali gagal
+      const firstErrorKey = Object.keys(data.errors)[0];
+      errorMessage.value = data.errors[firstErrorKey][0];
+
+    } else if (data?.message) {
+      // Untuk error 404 (Email tidak terdaftar) atau 401 (Password salah)
+      errorMessage.value = data.message;
+    } else {
+      // Pesan fallback (misal: masalah CORS atau jaringan)
+      errorMessage.value = "Login gagal. Terjadi kesalahan jaringan atau server."
+    }
+    
   } finally {
     isLoading.value = false
   }
@@ -172,7 +194,7 @@ async function handleLogin() {
 </script>
 
 <style scoped>
-
+/* Styles tetap sama */
 @keyframes fadein {
   from { opacity: 0; transform: translateY(30px) scale(0.95); }
   to { opacity: 1; transform: translateY(0) scale(1); }

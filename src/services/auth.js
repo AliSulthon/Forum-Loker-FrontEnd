@@ -1,16 +1,15 @@
-import axios from "axios"
+// src/services/auth.js (Pastikan ini yang Anda gunakan)
 
-const API = "http://localhost:8000/api"
+import axios from "@/services/api.js"; 
 
-export async function loginUser(email, password) {
-  try {
-    const response = await axios.post(`${API}/login`, {
-      email,
-      password,
-    })
+export const login = (credentials) => {
+    // Credentials adalah objek { email, password }
+    return axios.post(`/login`, credentials); 
+};
 
-    return response.data
-  } catch (error) {
-    throw error
-  }
-}
+export const logout = () => {
+    // Panggil endpoint logout
+    return axios.post(`/logout`); 
+};
+
+// Pastikan file ini tidak lagi memiliki export 'loginUser'

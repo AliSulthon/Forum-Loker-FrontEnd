@@ -2,10 +2,7 @@
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#F5F5F5]">
-
-    <router-view />
-  </div>
+  <RouterView />
 </template>
 
 <style>

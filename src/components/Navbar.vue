@@ -5,7 +5,6 @@
   >
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
 
-      <!-- LEFT: Logo + Title -->
       <div class="flex items-center gap-3">
         <img 
           src="/src/assets/logo.png"
@@ -15,9 +14,7 @@
         <h1 class="text-4xl font-semibold text-primary font-namaApp">Sevanta</h1>
       </div>
 
-      <!-- CENTER: Navigation -->
       <div class="flex items-center gap-6">
-        <!-- HOME -->
         <RouterLink 
           to="/"
           :class="[
@@ -59,10 +56,9 @@
         </RouterLink>
       </div>
 
-      <!-- RIGHT: Icons -->
       <div class="flex items-center gap-3">
         <RouterLink 
-          to="/chat"
+          to="/chats"
           class="p-2 rounded-full transition flex items-center justify-center bg-white hover:bg-primary-dark"
         >
           <svg xmlns="http://www.w3.org/2000/svg"
@@ -77,7 +73,6 @@
           </svg>
         </RouterLink>
 
-        <!-- PROFILE DROPDOWN -->
         <div class="relative" ref="profileRef">
           <button 
             @click="toggleProfile"
@@ -93,7 +88,6 @@
             </svg>
           </button>
 
-          <!-- POPUP MENU -->
           <div 
             v-if="showProfileMenu"
             class="absolute right-0 mt-3 w-48 bg-white shadow-lg rounded-lg border border-gray-200 py-2 animate-fadeIn"
@@ -113,36 +107,24 @@
             </RouterLink>
 
             <button 
+              @click="handleLogout"
               class="block text-left w-full px-4 py-2 text-gray-700 hover:bg-primary hover:text-white transition"
             >
               Logout
             </button>
           </div>
         </div>
-
       </div>
     </div>
   </nav>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth.js';
+import { useAuthStore } from '@/stores/auth.js'; // Diambil dari Kode Pertama
 
-const authStore = useAuthStore();
-const router = useRouter();
-
-// cek login dari pinia
-const isLoggedIn = computed(() => authStore.isLoggedIn);
-
-const handleLogout = async () => {
-  await authStore.logout();
-  alert('Logout berhasil!');
-  router.push('/login');
-};
-import { ref, onMounted, onBeforeUnmount } from "vue";
-
+// --- Fungsionalitas Dropdown Profil (dari Kode Kedua) ---
 const showProfileMenu = ref(false);
 const profileRef = ref(null);
 
@@ -164,4 +146,17 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener("click", handleClickOutside);
 });
+
+// --- Fungsionalitas Login/Logout (dari Kode Pertama) ---
+const authStore = useAuthStore();
+const router = useRouter();
+
+// cek login dari pinia
+const isLoggedIn = computed(() => authStore.isLoggedIn);
+
+const handleLogout = async () => {
+  await authStore.logout();
+  alert('Logout berhasil!');
+  router.push('/login');
+};
 </script>

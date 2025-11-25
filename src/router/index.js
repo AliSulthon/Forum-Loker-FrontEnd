@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import RegisterView from '../views/Register.vue';
+import Register from '../views/Register.vue';
 import Login from '../views/Login.vue';
 import ArticleList from '../views/ArticleList.vue';
 import ArticleCreate from '../views/ArticleCreate.vue';
@@ -30,7 +30,6 @@ const routes = [
   name: "article-delete",
   component: ArticleDelete,
 },
-
 ];
 
 export default createRouter({

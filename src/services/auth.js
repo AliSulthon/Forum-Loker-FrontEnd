@@ -12,12 +12,22 @@ export const registerUser = async (userData) => {
 export const loginUser = async (credentials) => {
   try {
     const response = await api.post('/login', credentials);
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+    
+    
+    const responseData = response.data;
+    const authData = responseData.data; // Masuk ke object 'data' dulu
+
+    if (authData && authData.access_token) {
+      // Simpan token dengan key 'access_token' yang benar
+      localStorage.setItem('token', authData.access_token);
+      localStorage.setItem('user', JSON.stringify(authData.user));
+    } else {
+      throw new Error("Token tidak ditemukan dalam respons server");
     }
-    return response.data;
+
+    return responseData;
   } catch (error) {
+    console.error("Login Error:", error);
     throw error.response ? error.response.data : error;
   }
 };
@@ -25,6 +35,8 @@ export const loginUser = async (credentials) => {
 export const logoutUser = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
+  
+  window.location.reload();
 };
 
 export const getCurrentUser = () => {

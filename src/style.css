@@ -1,11 +1,13 @@
+/* 1. Konfigurasi Font & Warna Dasar */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: light;
+  /* Pakai warna background abu-abu muda biar clean (opsional) */
+  background-color: #f9fafb; 
+  color: #213547;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,6 +15,7 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* 2. Reset Link Style */
 a {
   font-weight: 500;
   color: #646cff;
@@ -22,12 +25,22 @@ a:hover {
   color: #535bf2;
 }
 
+/* 3. PENTING: Reset Body agar TIDAK center */
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  /* Hapus display: flex; dan place-items: center; */
   min-width: 320px;
   min-height: 100vh;
+  display: block; /* Pastikan block biasa */
+}
+
+/* 4. PENTING: Hapus Batasan Lebar #app */
+#app {
+  /* max-width: 1280px;  <-- INI DIHAPUS */
+  /* margin: 0 auto;     <-- INI DIHAPUS */
+  /* padding: 2rem;      <-- INI DIHAPUS (biar navbar nempel ke atas) */
+  /* text-align: center; <-- INI DIHAPUS */
+  width: 100%; /* Pastikan lebar penuh */
 }
 
 h1 {
@@ -35,6 +48,7 @@ h1 {
   line-height: 1.1;
 }
 
+/* Tombol bawaan (bisa dihapus jika sudah pakai class Tailwind) */
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -52,17 +66,6 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}
-
-.card {
-  padding: 2em;
-}
-
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
 }
 
 @media (prefers-color-scheme: light) {

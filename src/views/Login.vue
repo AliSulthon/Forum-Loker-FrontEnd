@@ -160,7 +160,8 @@ async function handleLogin() {
     if (!res.error) {
       localStorage.setItem("auth_token", res.data.access_token)
       localStorage.setItem("user_info", JSON.stringify(res.data.user))
-      router.push("/")
+      // Force page refresh to update navbar state
+      window.location.href = "/"
     }
 
   } catch (err) {

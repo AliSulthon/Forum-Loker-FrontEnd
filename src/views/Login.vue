@@ -19,7 +19,7 @@
         
         <div class="relative z-10">
           <img 
-            src="/logo-forum-loker.png" 
+            src="@/assets/logo.png" 
             alt="Logo Forum Loker" 
             class="w-28 mb-8 drop-shadow-md hover:scale-105 transition-transform duration-300"
           >
@@ -39,7 +39,7 @@
         <div class="text-center mb-6">
           
           <div class="flex justify-center md:hidden mb-6">
-            <img src="/logo-forum-loker.png" alt="Logo Forum Loker" class="w-24 drop-shadow-sm">
+            <img src="@/assets/logo.png" alt="Logo Forum Loker" class="w-24 drop-shadow-sm">
           </div>
 
           <h2 class="text-3xl font-bold text-headline font-namaApp tracking-tight">Sign In</h2>
@@ -160,7 +160,7 @@ async function handleLogin() {
     if (!res.error) {
       localStorage.setItem("auth_token", res.data.access_token)
       localStorage.setItem("user_info", JSON.stringify(res.data.user))
-      router.push("/dashboard")
+      router.push("/sharing")
     }
 
   } catch (err) {

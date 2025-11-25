@@ -26,9 +26,9 @@
     <p v-if="error" class="text-red-500 mt-3">{{ error }}</p>
   </div>
 </template>
-
 <script>
-import api from "../service/api";
+import axios from "axios";
+import { authHeader } from "../service/auth"; // ← tambahkan ini
 
 export default {
   data() {
@@ -40,16 +40,29 @@ export default {
   },
   methods: {
     async createArticle() {
+      const API_URL = "http://127.0.0.1:8000/api";
+
       try {
-        await api.post("/articles", {
-          title: this.title,
-          content: this.content,
-        });
+        const response = await axios.post(
+          `${API_URL}/articles`,
+          {
+            title: this.title,
+            content: this.content,
+          },
+          {
+            headers: authHeader(), // ← pakai di sini
+          }
+        );
 
         this.$router.push("/articles");
-      } catch (err) {
-        this.error =
-          err.response?.data?.message || "Gagal membuat artikel.";
+
+      } catch (error) {
+        if (error.response?.status === 401) {
+          this.error = "Tidak memiliki akses. Silakan login ulang.";
+        } else {
+          this.error =
+            error.response?.data?.message || "Gagal membuat artikel.";
+        }
       }
     },
   },

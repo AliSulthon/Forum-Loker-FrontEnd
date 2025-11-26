@@ -150,7 +150,7 @@ async function fetchDetail() {
     
     sharing.value = response.data.data
     
-    // ✅ PENTING: Set like status dari backend
+    
     likeCount.value = response.data.data.likes_count || 0
     isLiked.value = response.data.data.is_liked || false
     

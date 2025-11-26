@@ -16,7 +16,7 @@
         
         <div class="mb-8 border-b border-gray-100 pb-6">
           <h1 class="font-namaApp text-3xl font-bold text-headline">
-            {{ isEditing ? 'Edit Post' : 'Create New information Post' }}
+            {{ isEditing ? 'Edit Post' : 'Create New Information Post' }}
           </h1>
           <p class="text-detail mt-2">Share your thoughts with the community.</p>
         </div>
@@ -29,9 +29,17 @@
               v-model="form.title" 
               type="text" 
               placeholder="What's the topic?" 
-              class="w-full px-5 py-4 text-lg font-bold text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blueHeadline focus:bg-white transition-all placeholder-gray-400"
-              required
+              class="w-full px-5 py-4 text-lg font-bold text-gray-900 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 transition-all placeholder-gray-400"
+              :class="[
+                validationErrors.title 
+                  ? 'border-red-500 focus:ring-red-500 bg-red-50' 
+                  : 'border-gray-200 focus:ring-blueHeadline focus:bg-white'
+              ]"
             />
+            <p v-if="validationErrors.title" class="text-red-500 text-sm font-bold flex items-center gap-1 mt-1 animate-pulse">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              {{ validationErrors.title[0] }}
+            </p>
           </div>
 
           <div class="space-y-3">
@@ -40,9 +48,17 @@
               v-model="form.content" 
               rows="12" 
               placeholder="Write your information here..." 
-              class="w-full px-5 py-4 text-base leading-relaxed text-gray-800 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blueHeadline focus:bg-white transition-all resize-none placeholder-gray-400"
-              required
+              class="w-full px-5 py-4 text-base leading-relaxed text-gray-800 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 transition-all resize-none placeholder-gray-400"
+              :class="[
+                validationErrors.content 
+                  ? 'border-red-500 focus:ring-red-500 bg-red-50' 
+                  : 'border-gray-200 focus:ring-blueHeadline focus:bg-white'
+              ]"
             ></textarea>
+            <p v-if="validationErrors.content" class="text-red-500 text-sm font-bold flex items-center gap-1 mt-1 animate-pulse">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              {{ validationErrors.content[0] }}
+            </p>
           </div>
 
           <div class="flex items-center justify-end gap-4 pt-4 border-t border-gray-100">
@@ -76,14 +92,16 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import axios from "axios"
+import { useAuthStore } from "@/stores/auth" 
+import api from "@/services/api" 
 
 const route = useRoute()
 const router = useRouter()
-const API_URL = "http://localhost:8000/api"
+const authStore = useAuthStore()
 
 const form = reactive({ title: "", content: "" })
 const isSubmitting = ref(false)
+const validationErrors = ref({}) // State untuk menyimpan error validasi
 
 // Cek apakah mode Edit (ada ID di URL)
 const isEditing = computed(() => !!route.params.id)
@@ -92,13 +110,11 @@ onMounted(async () => {
   // Jika ada ID di URL, berarti sedang Edit -> Ambil data lama
   if (isEditing.value) {
     try {
-      const token = localStorage.getItem("auth_token")
-      const res = await axios.get(`${API_URL}/sharing/${route.params.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await api.get(`/sharing/${route.params.id}`)
       form.title = res.data.data.title
       form.content = res.data.data.content
     } catch (error) {
+      console.error("Gagal mengambil data:", error)
       alert("Gagal mengambil data post.")
       router.push('/sharing')
     }
@@ -107,24 +123,36 @@ onMounted(async () => {
 
 async function handleSubmit() {
   isSubmitting.value = true
-  const token = localStorage.getItem("auth_token")
-
+  validationErrors.value = {} 
+  
   try {
     if (isEditing.value) {
-      // UPDATE
-      await axios.put(`${API_URL}/sharing/${route.params.id}`, form, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      await api.put(`/sharing/${route.params.id}`, form)
     } else {
-      // CREATE
-      await axios.post(`${API_URL}/sharing`, form, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      await api.post(`/sharing`, form)
     }
+    
     // Sukses -> Kembali ke feed
     router.push('/sharing')
+    
   } catch (error) {
-    alert(error.response?.data?.message || "Terjadi kesalahan.")
+    console.error("Error submit:", error)
+    
+    // 1. Handle Validation Error (422)
+    if (error.response?.status === 422) {
+       validationErrors.value = error.response.data.errors
+    } 
+    // 2. Handle Unauthorized (401)
+    else if (error.response?.status === 401) {
+       alert("Sesi berakhir, silakan login kembali.")
+       authStore.logout()
+       router.push('/login')
+    } 
+    // 3. Handle Other Errors
+    else {
+       alert(error.response?.data?.message || "Terjadi kesalahan.")
+    }
+    
   } finally {
     isSubmitting.value = false
   }

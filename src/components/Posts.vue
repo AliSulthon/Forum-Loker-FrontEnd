@@ -102,9 +102,11 @@
                   <span class="text-sm font-medium text-[#929292]">{{ formatDate(post.created_at) }}</span>
                 </div>
                 
+                <RouterLink :to="{ name: 'post-detail', params: { id: post.id } }">
                 <h3 class="text-xl md:text-2xl font-bold font-namaApp text-black mb-3 cursor-pointer hover:text-primary transition-colors">
                   {{ post.title }}
                 </h3>
+                </RouterLink>
 
                 <p class="text-gray-600 leading-relaxed whitespace-pre-line mb-6">
                   {{ post.content }}
@@ -196,7 +198,7 @@
                   <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-gray-200 shadow-sm inline-block min-w-[200px]">
                     <div v-if="editingCommentId !== comment.id">
                        <div class="flex justify-between items-center mb-1">
-                          <span class="font-bold text-xs text-gray-800">{{ comment.user?.name || 'Anonymous' }}</span>
+                          <span class="font-bold text-xs text-gray-800">{{ comment.user?.username || 'Anonymous' }}</span>
                           <span class="text-[10px] text-gray-400">{{ formatDate(comment.created_at) }}</span>
                        </div>
                        <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ comment.content }}</p> 

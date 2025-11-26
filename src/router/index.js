@@ -6,6 +6,7 @@ import Login from '../views/Login.vue' // Pastikan file ini ada atau buat dummy 
 // import BookmarksView from '../views/BookmarksView.vue'
 // import ProfileView from '../views/ProfileView.vue'
 // import Sharing from '../views/Sharing.vue'
+import PostDetailView from '../views/PostDetailView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,6 +22,12 @@ const router = createRouter({
       name: 'login',
       component: Login,
       meta: { requiresAuth: false }
+    },
+    {
+      path: '/posts/:id', // :id adalah parameter dinamis
+      name: 'post-detail',
+      component: PostDetailView,
+      meta: { requiresAuth: false } // Publik bisa akses
     },
     // Route milik teman Anda (aktifkan jika file view-nya sudah Anda buat/copy)
     /*

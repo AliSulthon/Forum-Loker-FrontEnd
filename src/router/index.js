@@ -19,6 +19,7 @@ import CommunityPostDetailPage from "../views/communityPosts/CommunityPostDetail
 import ArticleList from "../views/ArticleList.vue";
 import ArticleCreate from "../views/ArticleCreate.vue";
 import ArticleEdit from "../views/ArticleEdit.vue";
+import ArticleDetail from "../views/ArticleDetail.vue";
 import PostDetailView from "../views/PostDetailView.vue";
 import MainLayout from "../layouts/MainLayout.vue";
 import SharingForm from "../views/SharingForm.vue";
@@ -57,6 +58,7 @@ const routes = [
       { path: "articles", name: "articles", component: ArticleList },
       { path: "articles/create", name: "article-create", component: ArticleCreate },
       { path: "articles/edit/:id", name: "article-edit", component: ArticleEdit },
+      { path: "articles/:id", name: "article-detail", component: ArticleDetail },
     ]
   },
 

@@ -18,6 +18,7 @@ import ArticleList from "../views/ArticleList.vue";
 import ArticleCreate from "../views/ArticleCreate.vue";
 import ArticleEdit from "../views/ArticleEdit.vue";
 import MainLayout from "../layouts/MainLayout.vue";
+import SharingForm from '../views/SharingForm.vue'
 
 const routes = [
     { path: "/login", name: "login", component: Login },
@@ -47,6 +48,20 @@ const routes = [
             { path: "articles/edit/:id", name: "article-edit", component: ArticleEdit }
         ]
     },
+    {
+    path: '/sharing/create',
+    name: 'SharingCreate',
+    component: SharingForm,
+    meta: { requiresAuth: true }
+  },
+  
+  // Route Edit (Menerima parameter ID)
+  {
+    path: '/sharing/edit/:id',
+    name: 'SharingEdit',
+    component: SharingForm,
+    meta: { requiresAuth: true }
+  }
 ];
 
 const router = createRouter({

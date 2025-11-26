@@ -13,17 +13,17 @@
             Sharing <span class="text-blueHeadline">Corner</span>
           </h1>
           <p class="text-detail font-medium max-w-xl">
-            Temukan wawasan terbaru dari komunitas Sevanta.
+            Discover the latest insights from the Sevanta community.
           </p>
         </div>
         
-        <button 
-          @click="openModal('create')"
-          class="flex items-center gap-2 px-6 py-3 rounded-xl bg-blueHeadline text-white font-bold shadow-lg shadow-blueHeadline/30 hover:bg-bluePrimary hover:-translate-y-1 transition-all duration-300"
+       <router-link 
+        to="/sharing/create"
+        class="flex items-center gap-2 px-6 py-3 rounded-xl bg-blueHeadline text-white font-bold shadow-lg shadow-blueHeadline/30 hover:bg-bluePrimary hover:-translate-y-1 transition-all duration-300"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-          Buat Postingan
-        </button>
+         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+         Create Post
+        </router-link>
       </div>
 
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b border-gray-200 pb-1">
@@ -38,7 +38,7 @@
                 : 'border-transparent text-gray-500 hover:text-headline hover:bg-gray-50'
             ]"
           >
-            Eksplorasi
+            Explore
           </button>
           <button 
             @click="activeTab = 'my'"
@@ -49,7 +49,7 @@
                 : 'border-transparent text-gray-500 hover:text-headline hover:bg-gray-50'
             ]"
           >
-            Postingan Saya
+            My Posts
           </button>
         </div>
 
@@ -57,7 +57,7 @@
           <input 
             v-model="searchQuery"
             type="text" 
-            placeholder="Cari topik..." 
+            placeholder="Search topics..." 
             class="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blueHeadline focus:border-transparent transition-all shadow-sm"
           >
           <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,9 +81,9 @@
           <svg class="w-10 h-10 text-blueHeadline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
         </div>
         <h3 class="text-xl font-bold text-headline mb-2">
-          {{ activeTab === 'my' ? 'Anda belum memposting apapun.' : 'Belum ada konten tersedia.' }}
+          {{ activeTab === 'my' ? "You haven't posted anything yet." : "No content available." }}
         </h3>
-        <p v-if="activeTab === 'my'" class="text-detail">Mulai berbagi ide Anda sekarang!</p>
+        <p v-if="activeTab === 'my'" class="text-detail">Start sharing your ideas now!</p>
       </div>
 
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -110,8 +110,13 @@
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                  </button>
                  <div v-if="item.showMenu" @mouseleave="item.showMenu = false" class="absolute right-0 top-8 w-32 bg-white rounded-xl shadow-lg border border-gray-100 py-2">
-                    <button @click="openModal('edit', item)" class="w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">Edit</button>
-                    <button @click="deleteSharing(item.id)" class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50">Hapus</button>
+                    <router-link 
+                    :to="{ name: 'SharingEdit', params: { id: item.id } }"
+                    class="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                  >
+                   Edit
+                  </router-link>
+                    <button @click="deleteSharing(item.id)" class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50">Delete</button>
                  </div>
               </div>
             </div>
@@ -137,7 +142,7 @@
               :to="{ name: 'SharingDetail', params: { id: item.id } }" 
               class="text-xs font-bold text-blueHeadline hover:bg-blue-50 px-3 py-1.5 rounded-full transition-colors"
             >
-              Baca Detail
+              Read More
             </router-link>
           </div>
         </div>
@@ -148,22 +153,22 @@
     <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" @click="closeModal"></div>
        <div class="bg-white w-full max-w-lg rounded-[30px] shadow-2xl z-10 p-8 relative overflow-hidden">
-          <h2 class="text-2xl font-bold font-namaApp mb-6">{{ isEditing ? 'Edit Postingan' : 'Buat Postingan Baru' }}</h2>
+          <h2 class="text-2xl font-bold font-namaApp mb-6">{{ isEditing ? 'Edit Post' : 'Create New Post' }}</h2>
           <form @submit.prevent="handleSubmit">
              <div class="space-y-4">
                 <div>
-                  <label class="block text-xs font-bold text-detail uppercase tracking-wider mb-2">Judul</label>
-                  <input v-model="form.title" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blueHeadline" required placeholder="Judul..." />
+                  <label class="block text-xs font-bold text-detail uppercase tracking-wider mb-2">Title</label>
+                  <input v-model="form.title" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blueHeadline" required placeholder="Enter title..." />
                 </div>
                 <div>
-                   <label class="block text-xs font-bold text-detail uppercase tracking-wider mb-2">Konten</label>
-                   <textarea v-model="form.content" rows="4" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blueHeadline" required placeholder="Tulis sesuatu..."></textarea>
+                   <label class="block text-xs font-bold text-detail uppercase tracking-wider mb-2">Content</label>
+                   <textarea v-model="form.content" rows="4" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blueHeadline" required placeholder="Write something..."></textarea>
                 </div>
              </div>
              <div class="flex gap-3 mt-6">
-                <button type="button" @click="closeModal" class="flex-1 py-3 border border-gray-200 rounded-xl font-bold text-detail hover:bg-gray-50">Batal</button>
+                <button type="button" @click="closeModal" class="flex-1 py-3 border border-gray-200 rounded-xl font-bold text-detail hover:bg-gray-50">Cancel</button>
                 <button type="submit" :disabled="isSubmitting" class="flex-1 py-3 bg-blueHeadline text-white rounded-xl font-bold hover:bg-bluePrimary disabled:opacity-70">
-                   {{ isSubmitting ? 'Menyimpan...' : 'Simpan' }}
+                   {{ isSubmitting ? 'Saving...' : 'Save' }}
                 </button>
              </div>
           </form>
@@ -175,7 +180,12 @@
 
 <script setup>
 import { ref, onMounted, reactive, computed } from "vue"
-import axios from "axios"
+import { useRouter } from "vue-router" 
+import { useAuthStore } from "@/stores/auth" 
+import api from "@/services/api" 
+
+const router = useRouter() 
+const authStore = useAuthStore()
 
 const sharings = ref([])
 const isLoading = ref(true)
@@ -184,12 +194,12 @@ const isEditing = ref(false)
 const isSubmitting = ref(false)
 const currentId = ref(null)
 const activeTab = ref('all')
-const loggedInUserId = ref(null)
 const searchQuery = ref("")
+const loggedInUserId = computed(() => authStore.user?.id)
+const currentUser = computed(() => authStore.user)
 
 const errorState = reactive({ show: false, message: "" })
 const form = reactive({ title: "", content: "" })
-const API_URL = "http://localhost:8000/api"
 
 // Computed Filter
 const filteredSharings = computed(() => {
@@ -212,25 +222,46 @@ const filteredSharings = computed(() => {
 
   return result
 })
-function getInitials(name) { return name ? name.charAt(0).toUpperCase() : '?' }
-function formatDate(date) { return new Date(date).toLocaleDateString('id-ID', { year:'numeric', month:'short', day:'numeric' }) }
-function isOwner(userId) { return loggedInUserId.value === userId }
+
+function getInitials(name) { 
+  return name ? name.charAt(0).toUpperCase() : '?' 
+}
+
+function formatDate(date) { 
+  return new Date(date).toLocaleDateString('id-ID', { 
+    year:'numeric', 
+    month:'short', 
+    day:'numeric' 
+  }) 
+}
+
+function isOwner(userId) { 
+  return loggedInUserId.value === userId 
+}
 
 async function fetchSharings() {
   isLoading.value = true
-  const token = localStorage.getItem("auth_token")
-  const userData = localStorage.getItem("user_info")
   
-  if (userData) loggedInUserId.value = JSON.parse(userData).id
-
+  // ✅ Load auth dari store
+  authStore.loadFromStorage()
+  
   try {
-    const response = await axios.get(`${API_URL}/sharing`, {
-       headers: { Authorization: `Bearer ${token}` }
-    })
-    sharings.value = response.data.data.map(item => ({ ...item, showMenu: false }))
+    //api instance (token sudah auto di interceptor)
+    const response = await api.get('/sharing')
+    sharings.value = response.data.data.map(item => ({ 
+      ...item, 
+      showMenu: false 
+    }))
   } catch (error) {
-    if(error.response?.status !== 404) {
-       errorState.show = true; errorState.message = "Gagal memuat data."
+    console.error('Fetch sharings error:', error)
+    
+    // Handle 401
+    if (error.response?.status === 401) {
+      authStore.logout()
+      router.push('/login')
+    } else if (error.response?.status !== 404) {
+      errorState.show = true
+      errorState.message = "Gagal memuat data."
     }
   } finally {
     isLoading.value = false
@@ -238,6 +269,13 @@ async function fetchSharings() {
 }
 
 function openModal(type, item = null) {
+  // CEK AUTH sebelum create/edit
+  if (!authStore.isAuthenticated) {
+    alert("Silakan login terlebih dahulu!")
+    router.push('/login')
+    return
+  }
+  
   showModal.value = true
   if (type === 'edit' && item) {
     isEditing.value = true
@@ -253,25 +291,41 @@ function openModal(type, item = null) {
   }
 }
 
-function closeModal() { showModal.value = false }
+function closeModal() { 
+  showModal.value = false 
+}
 
 async function handleSubmit() {
+  // Double check auth
+  if (!authStore.isAuthenticated) {
+    alert("Sesi Anda telah berakhir. Silakan login kembali.")
+    authStore.logout()
+    router.push('/login')
+    return
+  }
+  
   isSubmitting.value = true
-  const token = localStorage.getItem("auth_token")
+  
   try {
+    // Api instance
     if (isEditing.value) {
-      await axios.put(`${API_URL}/sharing/${currentId.value}`, form, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      await api.put(`/sharing/${currentId.value}`, form)
     } else {
-      await axios.post(`${API_URL}/sharing`, form, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      await api.post('/sharing', form)
     }
     closeModal()
     fetchSharings()
   } catch (error) {
-    alert(error.response?.data?.message || "Terjadi kesalahan.")
+    console.error('Submit error:', error)
+    
+    // Handle 401
+    if (error.response?.status === 401) {
+      alert("Sesi Anda telah berakhir. Silakan login kembali.")
+      authStore.logout()
+      router.push('/login')
+    } else {
+      alert(error.response?.data?.message || "Terjadi kesalahan.")
+    }
   } finally {
     isSubmitting.value = false
   }
@@ -279,14 +333,40 @@ async function handleSubmit() {
 
 async function deleteSharing(id) {
   if (!confirm("Hapus post ini?")) return
+  
+  // Check auth
+  if (!authStore.isAuthenticated) {
+    alert("Silakan login terlebih dahulu!")
+    router.push('/login')
+    return
+  }
+  
   try {
-     const token = localStorage.getItem("auth_token")
-     await axios.delete(`${API_URL}/sharing/${id}`, { headers: { Authorization: `Bearer ${token}` }})
-     fetchSharings()
-  } catch(e) { alert("Gagal hapus") }
+    // api instance
+    await api.delete(`/sharing/${id}`)
+    fetchSharings()
+  } catch(error) { 
+    console.error('Delete error:', error)
+    
+    // Handle 401
+    if (error.response?.status === 401) {
+      authStore.logout()
+      router.push('/login')
+    } else {
+      alert("Gagal hapus")
+    }
+  }
 }
-
+//Debug
 onMounted(() => {
+  console.log('=== DEBUG INFO (Sharing.vue) ===')
+  console.log('Auth Store Token:', authStore.token)
+  console.log('Auth Store User:', authStore.user?.name)
+  console.log('Is Authenticated:', authStore.isAuthenticated)
+  console.log('================================')
+  
+  // Load auth dan fetch data
+  authStore.loadFromStorage()
   fetchSharings()
 })
 </script>

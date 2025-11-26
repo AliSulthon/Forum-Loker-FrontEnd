@@ -105,7 +105,7 @@
                 <input type="checkbox" v-model="rememberMe" class="w-4 h-4 rounded border-gray-300 text-blueHeadline focus:ring-blueHeadline accent-blueHeadline cursor-pointer">
                 <span class="ml-2 font-medium group-hover:text-headline transition-colors">Remember Me</span>
              </label>
-             <a href="#" class="text-blueHeadline font-bold hover:text-bluePrimary hover:underline transition-colors">Forgot Password?</a>
+             <!-- <a href="#" class="text-blueHeadline font-bold hover:text-bluePrimary hover:underline transition-colors">Forgot Password?</a> -->
           </div>
 
           <button

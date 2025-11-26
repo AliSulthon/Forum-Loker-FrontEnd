@@ -118,7 +118,7 @@ const deleteArticle = async (id) => {
 
 
 
-//versi ai langsung
+//versi copas langsung
 <template>
   <div class="p-6">
     <!--Header -->
@@ -270,4 +270,5 @@ const openDetail = (id) => {
   router.push(`/articles/${id}`);
 };
 </script>
+
 

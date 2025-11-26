@@ -16,12 +16,26 @@
       </button>
 
       <!-- Title -->
-      <h1 class="text-4xl font-bold mb-3">{{ article.title }}</h1>
+      <h1 class="text-4xl font-bold mb-4">{{ article.title }}</h1>
 
-      <!-- Metadata -->
-      <p class="text-gray-500 mb-6 text-sm">
-        Ditulis oleh: {{ article.user?.username || article.user?.name || "Unknown" }} • {{ formattedDate }}
-      </p>
+      <!-- Author & Metadata -->
+      <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-200">
+        <RouterLink 
+          v-if="article.user" 
+          :to="{ name: 'user-profile', params: { id: article.user_id } }"
+          class="flex items-center gap-3 hover:opacity-80 transition"
+        >
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shadow">
+            {{ article.user?.name?.charAt(0).toUpperCase() || '?' }}
+          </div>
+          <div>
+            <p class="font-semibold text-gray-900">{{ article.user?.name || 'Unknown' }}</p>
+            <p class="text-xs text-gray-500">@{{ article.user?.username || 'user' }}</p>
+          </div>
+        </RouterLink>
+        <span class="text-gray-400">•</span>
+        <span class="text-sm text-gray-500">{{ formattedDate }}</span>
+      </div>
 
       <!-- Content -->
       <div class="text-lg leading-relaxed whitespace-pre-line mb-8">

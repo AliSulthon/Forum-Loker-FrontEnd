@@ -37,7 +37,11 @@
           <div class="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden relative">
             
             <div class="p-6 border-b border-gray-50 flex items-center justify-between bg-white">
-              <div class="flex items-center gap-4">
+              <RouterLink 
+                v-if="sharing.user" 
+                :to="{ name: 'user-profile', params: { id: sharing.user_id } }"
+                class="flex items-center gap-4 hover:opacity-80 transition"
+              >
                 <div class="w-14 h-14 rounded-full bg-gradient-to-br from-blueHeadline to-bluePrimary text-white flex items-center justify-center font-bold text-2xl shadow-md">
                    {{ getInitials(sharing.user?.fullname) }}
                 </div>
@@ -51,7 +55,7 @@
                      <span>{{ formatDate(sharing.created_at) }}</span>
                   </div>
                 </div>
-              </div>
+              </RouterLink>
             </div>
 
             <div class="p-8">

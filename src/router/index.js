@@ -21,6 +21,7 @@ import ArticleCreate from "../views/ArticleCreate.vue";
 import ArticleEdit from "../views/ArticleEdit.vue";
 import ArticleDetail from "../views/ArticleDetail.vue";
 import PostDetailView from "../views/PostDetailView.vue";
+import UserProfile from "../views/UserProfile.vue";
 import MainLayout from "../layouts/MainLayout.vue";
 import SharingForm from "../views/SharingForm.vue";
 
@@ -38,6 +39,7 @@ const routes = [
     children: [
       { path: "", name: "home", component: HomeView },
       { path: "profile", name: "profile", component: ProfileView },
+      { path: "user/:id", name: "user-profile", component: UserProfile, meta: { requiresAuth: false } },
       { path: "bookmarks", name: "bookmarks", component: BookmarksView },
       { path: "sharing", name: "sharing", component: Sharing },
       { path: "sharing/:id", name: "SharingDetail", component: SharingDetail },

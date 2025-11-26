@@ -95,7 +95,12 @@
         >
           <div>
             <div class="flex items-center justify-between mb-4">
-              <div class="flex items-center gap-3">
+              <RouterLink 
+                v-if="item.user" 
+                :to="{ name: 'user-profile', params: { id: item.user_id } }"
+                class="flex items-center gap-3 hover:opacity-80 transition"
+                @click.stop
+              >
                 <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blueHeadline to-bluePrimary flex items-center justify-center text-white font-bold text-sm shadow-md">
                    {{ getInitials(item.user?.fullname) }}
                 </div>
@@ -103,7 +108,7 @@
                   <p class="text-sm font-bold text-headline leading-tight">{{ item.user?.fullname }}</p>
                   <p class="text-xs text-detail">{{ formatDate(item.created_at) }}</p>
                 </div>
-              </div>
+              </RouterLink>
               
               <div v-if="isOwner(item.user_id)" class="relative z-20">
                  <button @click.prevent="item.showMenu = !item.showMenu" class="text-gray-300 hover:text-blueHeadline p-1">

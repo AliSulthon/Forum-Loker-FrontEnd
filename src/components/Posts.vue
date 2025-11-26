@@ -148,14 +148,18 @@
               <div class="flex flex-wrap items-center justify-between border-t border-gray-100 pt-4 gap-4">
                 
                 <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-2 group/user cursor-pointer">
-                        <!-- <div class="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-sm font-bold text-gray-500">
+                    <RouterLink 
+                      v-if="post.user" 
+                      :to="{ name: 'user-profile', params: { id: post.user_id } }"
+                      class="flex items-center gap-2 group/user cursor-pointer hover:opacity-80 transition"
+                    >
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white border-2 border-white shadow">
                           {{ post.user?.name?.charAt(0).toUpperCase() || '?' }}
                         </div>
                         <span class="font-semibold text-gray-700 group-hover/user:text-primary transition-colors">
                           {{ post.user ? post.user.name : 'Anonymous' }}
-                        </span> -->
-                    </div>
+                        </span>
+                    </RouterLink>
 
                     <button 
                       @click="toggleComments(post.id)"

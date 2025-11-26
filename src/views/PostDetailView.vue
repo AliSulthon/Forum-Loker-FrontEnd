@@ -29,12 +29,19 @@
             </h1>
 
             <div class="flex items-center justify-between gap-4">
-              <div class="flex items-center gap-4">
-                <div>
-                  <p class="font-bold text-gray-900 text-lg">{{ post.user?.username || 'Anonymous' }}</p>
-                  <p class="text-sm text-gray-500">Penulis</p>
+              <RouterLink 
+                v-if="post.user" 
+                :to="{ name: 'user-profile', params: { id: post.user_id } }"
+                class="flex items-center gap-4 hover:opacity-80 transition"
+              >
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
+                  {{ post.user?.name?.charAt(0).toUpperCase() || '?' }}
                 </div>
-              </div>
+                <div>
+                  <p class="font-bold text-gray-900 text-lg">{{ post.user?.name || 'Anonymous' }}</p>
+                  <p class="text-sm text-gray-500">@{{ post.user?.username || 'user' }}</p>
+                </div>
+              </RouterLink>
 
               <!-- Bookmark button -->
               <button

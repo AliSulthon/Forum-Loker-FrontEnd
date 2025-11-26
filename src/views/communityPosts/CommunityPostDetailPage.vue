@@ -62,12 +62,23 @@
           </div>
         </div>
 
-        <div class="flex items-center gap-4 text-sm text-secondary border-b border-gray-100 pb-3 mb-5">
-            <p>
-                Author: <span class="font-semibold text-black">{{ authorName }}</span>
-            </p>
-            <p class="text-gray-500">
-                Published on: {{ formattedDate }}
+        <div class="flex items-center gap-4 border-b border-gray-100 pb-4 mb-5">
+            <RouterLink 
+              v-if="post.user" 
+              :to="{ name: 'user-profile', params: { id: post.user_id } }"
+              class="flex items-center gap-3 hover:opacity-80 transition"
+            >
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shadow">
+                {{ post.user?.name?.charAt(0).toUpperCase() || post.user?.username?.charAt(0).toUpperCase() || '?' }}
+              </div>
+              <div>
+                <p class="font-semibold text-black">{{ post.user?.name || post.user?.username || authorName }}</p>
+                <p class="text-xs text-gray-500">@{{ post.user?.username || 'user' }}</p>
+              </div>
+            </RouterLink>
+            <span class="text-gray-400">•</span>
+            <p class="text-sm text-gray-500">
+                {{ formattedDate }}
             </p>
         </div>
 

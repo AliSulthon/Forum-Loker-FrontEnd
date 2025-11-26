@@ -21,6 +21,8 @@ import ArticleEdit from "../views/ArticleEdit.vue";
 import MainLayout from "../layouts/MainLayout.vue";
 import SharingForm from '../views/SharingForm.vue'
 
+import NotFoundPage from "../views/404.vue";
+
 const routes = [
     { path: "/login", name: "login", component: Login },
     { path: "/register", name: "register", component: Register },
@@ -47,7 +49,15 @@ const routes = [
             // Article routes
             { path: "articles", name: "articles", component: ArticleList },
             { path: "articles/create", name: "article-create", component: ArticleCreate },
-            { path: "articles/edit/:id", name: "article-edit", component: ArticleEdit }
+            { path: "articles/edit/:id", name: "article-edit", component: ArticleEdit },
+
+
+            // 404 Not Found route
+            { 
+              path: '/:catchAll(.*)',
+              name: 'NotFound',
+              component: NotFoundPage 
+            }
         ]
     },
     {

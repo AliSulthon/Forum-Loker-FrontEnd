@@ -104,18 +104,16 @@ export const useAuthStore = defineStore('auth', () => {
   async function fetchProfile() {
     try {
       const res = await getProfile()
-      if (res.data) {
+
+      if (res.success && res.data) {
         updateUser(res.data)
-      } else if (res.user) { // Handle potential different response structure
-        updateUser(res.user)
-        return res.user
+        return res.data
       }
-      return res.data
+      return res
     } catch (error) {
       console.error('Error fetching profile:', error)
       // Fallback to stored user if available
       if (user.value) {
-        console.warn('Using cached user data')
         return user.value
       }
       throw error
@@ -125,10 +123,11 @@ export const useAuthStore = defineStore('auth', () => {
   async function updateProfile(data) {
     try {
       const res = await updateProfileService(data)
-      if (res.data) {
+      if (res.success && res.data) {
         updateUser(res.data)
+        return res.data
       }
-      return res.data
+      return res
     } catch (error) {
       throw error
     }
@@ -145,10 +144,12 @@ export const useAuthStore = defineStore('auth', () => {
   async function updatePhoto(formData) {
     try {
       const res = await updatePhotoService(formData)
-      if (res.data) {
-        updateUser(res.data)
+      // API returns user object in res.user for photo upload
+      if (res.success && res.user) {
+        updateUser(res.user)
+        return res.user
       }
-      return res.data
+      return res
     } catch (error) {
       throw error
     }
@@ -157,10 +158,13 @@ export const useAuthStore = defineStore('auth', () => {
   async function deletePhoto() {
     try {
       const res = await deletePhotoService()
-      if (res.data) {
-        updateUser(res.data)
+      // For delete, we might need to manually update the user object or re-fetch
+      // Assuming we need to clear the photo in local state
+      if (res.success) {
+        // Re-fetch profile to get updated state or manually clear
+        await fetchProfile()
       }
-      return res.data
+      return res
     } catch (error) {
       throw error
     }

@@ -32,7 +32,6 @@ onMounted(async () => {
     populateProfileForm();
     populateProfileForm();
   } catch (error) {
-    console.error('Profile load error:', error);
     showMessage('error', 'Failed to load profile: ' + (error.response?.data?.message || error.message));
   } finally {
     loading.value = false;

@@ -17,13 +17,13 @@
           </p>
         </div>
         
-        <button 
-          @click="openModal('create')"
-          class="flex items-center gap-2 px-6 py-3 rounded-xl bg-blueHeadline text-white font-bold shadow-lg shadow-blueHeadline/30 hover:bg-bluePrimary hover:-translate-y-1 transition-all duration-300"
+       <router-link 
+        to="/sharing/create"
+        class="flex items-center gap-2 px-6 py-3 rounded-xl bg-blueHeadline text-white font-bold shadow-lg shadow-blueHeadline/30 hover:bg-bluePrimary hover:-translate-y-1 transition-all duration-300"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-          Create Post
-        </button>
+         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+         Create Post
+        </router-link>
       </div>
 
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b border-gray-200 pb-1">
@@ -110,7 +110,12 @@
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                  </button>
                  <div v-if="item.showMenu" @mouseleave="item.showMenu = false" class="absolute right-0 top-8 w-32 bg-white rounded-xl shadow-lg border border-gray-100 py-2">
-                    <button @click="openModal('edit', item)" class="w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">Edit</button>
+                    <router-link 
+                    :to="{ name: 'SharingEdit', params: { id: item.id } }"
+                    class="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                  >
+                   Edit
+                  </router-link>
                     <button @click="deleteSharing(item.id)" class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50">Delete</button>
                  </div>
               </div>

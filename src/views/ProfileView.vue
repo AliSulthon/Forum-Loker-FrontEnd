@@ -1,6 +1,7 @@
 <script setup>
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, reactive, computed } from 'vue';
 import { useAuthStore } from '../stores/auth';
+import defaultProfile from '@/assets/default.png';
 
 const authStore = useAuthStore();
 
@@ -25,11 +26,26 @@ const passwordForm = reactive({
 const photoPreview = ref(null);
 const photoFile = ref(null);
 
+const profileImage = computed(() => {
+  if (photoPreview.value) return photoPreview.value;
+  
+  const user = authStore.user;
+  if (!user || !user.photo || user.photo === 'default.png') {
+    return defaultProfile;
+  }
+  
+  if (user.photo_url) {
+    return user.photo_url;
+  }
+  
+  // Construct URL if missing (assuming backend is at localhost:8000 based on api.js)
+  return `http://127.0.0.1:8000/storage/photos/${user.photo}`;
+});
+
 onMounted(async () => {
   try {
     loading.value = true;
     await authStore.fetchProfile();
-    populateProfileForm();
     populateProfileForm();
   } catch (error) {
     showMessage('error', 'Failed to load profile: ' + (error.response?.data?.message || error.message));
@@ -164,7 +180,7 @@ async function handleDeletePhoto() {
           <div class="relative group mb-6">
             <div class="w-32 h-32 rounded-full border-4 border-white/30 shadow-xl overflow-hidden bg-white/10 backdrop-blur-sm">
                <img 
-                :src="photoPreview || (authStore.user?.photo_url || 'https://via.placeholder.com/150')" 
+                :src="profileImage" 
                 alt="Profile Photo" 
                 class="w-full h-full object-cover"
               />

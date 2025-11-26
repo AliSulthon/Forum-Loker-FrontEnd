@@ -113,10 +113,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import axios from 'axios'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import api from '@/services/api'
 
 const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
+
 const sharing = ref({})
 const isLoading = ref(true)
 const error = ref(false)
@@ -125,53 +129,63 @@ const error = ref(false)
 const isLiked = ref(false)
 const likeCount = ref(0)
 
-const API_URL = "http://localhost:8000/api"
-
 // --- Fetch Data dengan Performance Monitoring ---
 async function fetchDetail() {
-  const startTime = performance.now() // Monitor performa
+  const startTime = performance.now()
   isLoading.value = true
   
   const id = route.params.id
-  const token = localStorage.getItem("auth_token")
+  authStore.loadFromStorage()
 
-  // Timeout protection (10 detik)
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 10000)
 
   try {
-    const response = await axios.get(
-      `${API_URL}/sharing/${id}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-        signal: controller.signal
-      }
+    const response = await api.get(
+      `/sharing/${id}`,
+      { signal: controller.signal }
     )
     
     clearTimeout(timeoutId)
     
     sharing.value = response.data.data
     
-    // Set State Like dari Response Backend
+    // ✅ PENTING: Set like status dari backend
     likeCount.value = response.data.data.likes_count || 0
     isLiked.value = response.data.data.is_liked || false
     
-    // Log performa (bisa dihapus di production)
+    // ✅ DEBUG: Cek apakah backend return is_liked
+    console.log('=== LIKE STATUS DEBUG ===')
+    console.log('Backend Response:', response.data.data)
+    console.log('likes_count:', likeCount.value)
+    console.log('is_liked:', isLiked.value)
+    console.log('is_liked type:', typeof isLiked.value)
+    console.log('========================')
+    
     const endTime = performance.now()
     console.log(`⏱️ Fetch detail: ${(endTime - startTime).toFixed(2)}ms`)
     
   } catch (err) {
     clearTimeout(timeoutId)
+    console.error('❌ Error fetching detail:', err)
+    
+    if (err.response?.status === 401) {
+      alert('Sesi Anda telah berakhir. Silakan login kembali.')
+      authStore.logout()
+      router.push('/login')
+      return
+    }
     
     if (err.name === 'AbortError' || err.code === 'ECONNABORTED') {
       console.error('Request timeout - koneksi terlalu lambat')
       alert('Koneksi terlalu lambat. Silakan coba lagi.')
+    } else if (err.response?.status === 404) {
+      alert('Postingan tidak ditemukan.')
     } else {
-      console.error('Error fetching detail:', err)
+      alert('Terjadi kesalahan saat memuat data.')
     }
     
     error.value = true
-    
   } finally {
     isLoading.value = false
   }
@@ -182,6 +196,13 @@ let likeDebounceTimer = null
 const isLikeProcessing = ref(false)
 
 async function toggleLike() {
+  // ✅ CEK AUTH sebelum like
+  if (!authStore.isAuthenticated) {
+    alert('Silakan login untuk menyukai postingan!')
+    router.push('/login')
+    return
+  }
+  
   // Prevent spam/double click
   if (isLikeProcessing.value) return
   
@@ -194,7 +215,7 @@ async function toggleLike() {
   const previousState = isLiked.value
   const previousCount = likeCount.value
 
-  // Update UI dulu (Optimistic UI - instant feedback)
+  // Optimistic UI update
   if (isLiked.value) {
     likeCount.value--
     isLiked.value = false
@@ -208,36 +229,44 @@ async function toggleLike() {
     isLikeProcessing.value = true
     
     const id = route.params.id
-    const token = localStorage.getItem("auth_token")
 
     try {
-      const response = await axios.post(
-        `${API_URL}/sharing/${id}/like`,
+      const response = await api.post(
+        `/sharing/${id}/like`,
         {},
-        { 
-          headers: { Authorization: `Bearer ${token}` },
-          timeout: 5000 
-        }
+        { timeout: 5000 }
       )
-      // Ini memastikan konsistensi data dengan server
+  
+      // ✅ SYNC state dari backend response
       if (response.data && !response.data.error) {
+        // ✅ PENTING: Update dari backend response
         isLiked.value = response.data.is_liked
         likeCount.value = response.data.likes_count
+        
+        console.log('=== LIKE RESPONSE DEBUG ===')
+        console.log('Backend Response:', response.data)
+        console.log('New is_liked:', isLiked.value)
+        console.log('New likes_count:', likeCount.value)
+        console.log('===========================')
       }
 
     } catch (error) {
-      console.error("Gagal like:", error)
+      console.error("❌ Gagal like:", error)
       
-      // Revert ke state semula
+      // Rollback ke state semula
       isLiked.value = previousState
       likeCount.value = previousCount
       
-      if (error.code === 'ECONNABORTED') {
-        alert("Koneksi timeout. Silakan coba lagi.")
-      } else if (error.response?.status === 401) {
+      if (error.response?.status === 401) {
         alert("Sesi Anda telah berakhir. Silakan login kembali.")
+        authStore.logout()
+        router.push('/login')
+      } else if (error.code === 'ECONNABORTED') {
+        alert("Koneksi timeout. Silakan coba lagi.")
+      } else if (error.response?.status === 404) {
+        alert("Postingan tidak ditemukan.")
       } else {
-        alert("Terjadi kesalahan. Silakan coba lagi.")
+        alert(error.response?.data?.message || "Terjadi kesalahan. Silakan coba lagi.")
       }
     } finally {
       isLikeProcessing.value = false
@@ -259,13 +288,31 @@ function formatDate(date) {
   })
 }
 
-function copyLink() {
-  navigator.clipboard.writeText(window.location.href)
-  alert("Link tersalin!")
+async function copyLink() {
+  try {
+    await navigator.clipboard.writeText(window.location.href)
+    alert("Link tersalin!")
+  } catch (err) {
+    console.error('Copy failed:', err)
+    const textarea = document.createElement('textarea')
+    textarea.value = window.location.href
+    document.body.appendChild(textarea)
+    textarea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textarea)
+    alert("Link tersalin!")
+  }
 }
 
 onMounted(() => {
+  console.log('=== SharingDetail Mounted ===')
+  console.log('Auth Store User:', authStore.user?.fullname)
+  console.log('Is Authenticated:', authStore.isAuthenticated)
+  console.log('Sharing ID:', route.params.id)
+  console.log('=============================')
+  
   fetchDetail()
 })
-
 </script>
+
+<!-- Template tetap sama, tidak perlu diubah -->

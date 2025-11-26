@@ -19,6 +19,8 @@ import CommunityPostDetailPage from "../views/communityPosts/CommunityPostDetail
 import ArticleList from "../views/ArticleList.vue";
 import ArticleCreate from "../views/ArticleCreate.vue";
 import ArticleEdit from "../views/ArticleEdit.vue";
+import ArticleDetail from "../views/ArticleDetail.vue";
+import PostDetailView from "../views/PostDetailView.vue";
 import MainLayout from "../layouts/MainLayout.vue";
 import SharingForm from "../views/SharingForm.vue";
 
@@ -40,6 +42,9 @@ const routes = [
       { path: "sharing", name: "sharing", component: Sharing },
       { path: "sharing/:id", name: "SharingDetail", component: SharingDetail },
 
+      // --- Rute Posts ---
+      { path: "posts/:id", name: "post-detail", component: PostDetailView, meta: { requiresAuth: false } },
+
       // --- Rute Komunitas ---
       { path: "communities", name: "communities", component: CommunitiesPage },
       { path: "communities/create", name: "community-create", component: CommunityCreatePage },
@@ -53,14 +58,15 @@ const routes = [
       { path: "articles", name: "articles", component: ArticleList },
       { path: "articles/create", name: "article-create", component: ArticleCreate },
       { path: "articles/edit/:id", name: "article-edit", component: ArticleEdit },
+      { path: "articles/:id", name: "article-detail", component: ArticleDetail },
     ]
   },
 
   // --- Rute Chat (DI LUAR MainLayout, menggunakan ChatLayout) ---
   {
-    path: "/chat", 
+    path: "/chat",
     component: ChatLayout,
-    meta: { requiresAuth: true }, 
+    meta: { requiresAuth: true },
     children: [
       { path: "", name: "chat.empty", component: ChatEmptyState },
       { path: ":id", name: "chat.detail", component: ChatDetailPage }
@@ -82,10 +88,10 @@ const routes = [
   },
 
   // --- Rute 404 Not Found ---
-  { 
+  {
     path: '/:catchAll(.*)',
     name: 'NotFound',
-    component: NotFoundPage 
+    component: NotFoundPage
   }
 ];
 

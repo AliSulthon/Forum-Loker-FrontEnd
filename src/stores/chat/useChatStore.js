@@ -15,6 +15,7 @@ export const useChatStore = defineStore("chat", {
 
     getters: {
         currentUserId() {
+            // Memastikan ID user tersedia
             return useAuthStore().user?.id;
         },
     },
@@ -57,7 +58,6 @@ export const useChatStore = defineStore("chat", {
             } catch (err) {
                 this.error = err;
                 console.error("fetchChatById error:", err);
-                // 🚨 PENTING: Melempar error agar ChatDetailPage bisa menangkap 404/Akses Ditolak
                 this.handleAuthError(err);
             } finally {
                 this.loading = false;
@@ -117,15 +117,27 @@ export const useChatStore = defineStore("chat", {
             this.activeChat = null;
         },
 
+        /**
+         * Action untuk memperbarui status Chat Participant (pinned, mute_until, archived).
+         * @param {number} chatId ID chat yang akan diperbarui
+         * @param {object} payload Data status yang akan dikirim ke backend (misalnya { pinned: true })
+         */
         async updateChatStatus(chatId, payload) {
             this.error = null;
             try {
+                // Panggil API untuk update status. Response akan mengembalikan objek Chat terbaru 
+                // yang sudah diperbarui, termasuk relasi participants.
                 const res = await chatService.updateChat(chatId, payload); 
 
                 const updatedChat = res.data.data;
                 const index = this.chats.findIndex(chat => chat.id === chatId);
 
+                // --- SINKRONISASI DATA UTAMA ---
+                
+                // 1. Perbarui list chats
                 if (index !== -1) {
+                    // Gunakan Object.assign untuk memperbarui objek chat di list secara reaktif 
+                    // (ini termasuk pembaruan array participants di dalamnya)
                     Object.assign(this.chats[index], updatedChat); 
                     
                     if ('pinned' in payload) {
@@ -133,17 +145,21 @@ export const useChatStore = defineStore("chat", {
                     }
                 }  
 
+                // 2. Perbarui activeChat (jika sedang dibuka)
                 if (this.activeChat?.id === chatId) {
+                    // Gunakan Object.assign untuk memperbarui activeChat secara reaktif
                     Object.assign(this.activeChat, updatedChat);
                 }
                 
+                // --- Selesai SINKRONISASI DATA UTAMA ---
+
                 return res.data;
             } catch (err) {
                 this.handleAuthError(err);
             }
         },
 
-        // 🚨 METHOD DELETE CHAT (FINAL)
+        
         async deleteChat(chatId, scope = 'me') {
             this.error = null;
             try {
@@ -159,35 +175,48 @@ export const useChatStore = defineStore("chat", {
                 this.handleAuthError(err);
             }
         },
+
+        getParticipantForChat(chatId) {
+            const chat = this.chats.find(c => c.id === chatId);
+            if (!chat) return null;
+            
+            return chat.participants?.find(
+                p => String(p.user_id) === String(this.currentUserId)
+            );
+        },
         
-        // 🚨 LOGIKA SORTING (FINAL FIX)
         sortChats() {
             const currentUserId = this.currentUserId; 
 
             this.chats.sort((a, b) => {
                 
                 // 1. Ambil status Pinning
-                // ✅ KOREKSI: Menggunakan p.id, BUKAN p.user_id
-                const participantA = a.participants.find(p => String(p.id) === String(currentUserId));
-                const participantB = b.participants.find(p => String(p.id) === String(currentUserId));
+                // NOTE: Koreksi sebelumnya adalah mencari berdasarkan p.id, tetapi 
+                // jika chat object dari API menggunakan p.user_id, gunakan itu. 
+                // Berdasarkan kode Anda yang dikirim, chat object yang diterima dari API 
+                // memiliki participants, dan untuk `currentParticipant` di komponen Vue, 
+                // Anda mencari berdasarkan `user_id` di ChatAction, jadi kita samakan di sini.
+                
+                const participantA = a.participants.find(p => String(p.user_id) === String(currentUserId));
+                const participantB = b.participants.find(p => String(p.user_id) === String(currentUserId));
                 
                 const pinA = participantA?.pinned || false;
                 const pinB = participantB?.pinned || false;
                 
                 // Pinning: Pin HARUS di atas.
-                if (pinA && !pinB) return -1; // A (pinned) naik ke atas
-                if (!pinA && pinB) return 1;  // B (pinned) naik ke atas
+                if (pinA && !pinB) return -1; 
+                if (!pinA && pinB) return 1; 
+                
                 if (pinA && pinB) {
-                // Jika keduanya pinned, urutkan berdasarkan updated_at
-                const timeA = new Date(a.updated_at);
-                const timeB = new Date(b.updated_at);
-                return timeB - timeA;
+                    // Jika keduanya pinned, urutkan berdasarkan updated_at
+                    const timeA = new Date(a.updated_at);
+                    const timeB = new Date(b.updated_at);
+                    return timeB - timeA;
                 }
 
-                // 2. Jika status Pin sama (keduanya tidak Pin), urutkan berdasarkan waktu
+                // 2. Jika status Pin sama, urutkan berdasarkan waktu updated_at (paling baru di atas)
                 const timeA = new Date(a.updated_at);
                 const timeB = new Date(b.updated_at);
-                // Paling baru di atas
                 return timeB - timeA;
             });
         },

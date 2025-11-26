@@ -1,56 +1,40 @@
 <template>
-  <div class="w-[340px] h-full border-r border-gray-200 bg-white flex flex-col">
+  <aside class="w-[340px] h-full border-r border-gray-200 bg-white flex flex-col shrink-0">
     
-    <!-- Header: HANYA Search Bar (Logo dihapus) -->
-    <div class="h-16 flex items-center px-4 border-b border-gray-200 bg-white gap-2">
-      
-      <!-- Search Bar (Flex-1) -->
+    <div class="h-16 flex items-center px-4 border-b border-gray-200 bg-white gap-2 shrink-0">
       <div class="flex-1">
-        <ChatSearch
-          @search="handleSearch"
-        />
+        <ChatSearch @search="handleSearch" />
       </div>
-
-      <!-- Button New Chat -->
       <button
         class="p-2 rounded-full transition hover:bg-[#E9E9E9] flex-shrink-0"
         @click="openNewChat"
         title="Chat Baru"
       >
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          class="w-6 h-6 text-[#14BEF0]" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="currentColor" 
-          stroke-width="2" 
-          stroke-linecap="round" 
-          stroke-linejoin="round"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[#14BEF0]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 5v14"/>
           <path d="M5 12h14"/>
         </svg>
       </button>
     </div>
 
-    <!-- Chat List -->
-    <div class="flex-1 overflow-y-auto custom-scrollbar">
+    <div class="flex-1 overflow-y-auto custom-scrollbar relative">
       
       <div v-if="loadingSearch" class="p-4 text-[#14BEF0] text-center text-sm animate-pulse">
         Sedang mencari kontak...
       </div>
 
-      <div v-else-if="displayedChats.length === 0" class="p-4 text-[#929292] text-center text-sm">
+      <div v-else-if="sortedDisplayedChats.length === 0" class="p-4 text-[#929292] text-center text-sm">
         {{ currentQuery ? 'Kontak tidak ditemukan' : 'Belum ada chat' }}
       </div>
 
       <ChatItem
-        v-for="chat in displayedChats"
+        v-for="chat in sortedDisplayedChats"
         :key="chat.id"
         :chat="chat" 
         :active="chat.id == activeId"
         @click="selectChat(chat)"
-        @open-menu="openChatMenu(chat)" />
+        @open-menu="openChatMenu(chat)" 
+      />
     </div>
 
     <NewChatPanel 
@@ -58,24 +42,26 @@
       @created="onCreated"
     />
     
+    <!-- ✅ PERBAIKAN: Hapus prop currentParticipant karena tidak diperlukan -->
     <ChatActionsOverlay 
       :isOpen="menuOpen"
       :chat="selectedChatForMenu"
-      :currentParticipant="currentParticipantForMenu"
       @update:isOpen="menuOpen = $event"
       @action-complete="handleActionComplete"
     />
-  </div>
+
+  </aside>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { useChatStore } from '@/stores/chat/useChatStore' 
+import { useAuthStore } from '@/stores/auth'
 
 import ChatSearch from '@/components/chat/ChatSearch.vue'
 import ChatItem from '@/components/chat/ChatItem.vue'
 import NewChatPanel from '@/components/chat/NewChatPanel.vue' 
-import ChatActionsOverlay from '@/components/chat/ChatActionsOverlay.vue'; 
+import ChatActionsOverlay from '@/components/chat/ChatActionsOverlay.vue'
 
 const props = defineProps({
   chats: { 
@@ -88,6 +74,7 @@ const props = defineProps({
 const emit = defineEmits(['select', 'search']) 
 
 const chatStore = useChatStore()
+const authStore = useAuthStore()
 
 // --- STATE ---
 const panelOpen = ref(false) 
@@ -98,15 +85,52 @@ const loadingSearch = ref(false)
 // 🎯 STATE MENU OVERLAY
 const menuOpen = ref(false)
 const selectedChatForMenu = ref({})
-const currentParticipantForMenu = ref(null)
 
+// Get current user ID
+const currentUserId = computed(() => authStore.user?.id)
 
 // --- COMPUTED ---
 const displayedChats = computed(() => {
   if (Array.isArray(searchResults.value)) {
     return searchResults.value
   }
-  return props.chats
+  return Array.isArray(props.chats) ? props.chats : []
+})
+
+// 🎯 SORTING: Pin di atas, lalu waktu terbaru (tetap pakai id)
+const sortedDisplayedChats = computed(() => {
+  const chatsToSort = displayedChats.value || []
+  
+  if (!Array.isArray(chatsToSort) || chatsToSort.length === 0) {
+    return []
+  }
+  
+  return [...chatsToSort].sort((a, b) => {
+    if (!a.participants || !b.participants) {
+      return 0
+    }
+
+    // ✅ PERBAIKAN: Tetap menggunakan id bukan user_id
+    const aParticipant = a.participants.find(p => 
+      String(p.id) === String(currentUserId.value)
+    )
+    const bParticipant = b.participants.find(p => 
+      String(p.id) === String(currentUserId.value)
+    )
+    
+    const aPinned = aParticipant?.pinned || false
+    const bPinned = bParticipant?.pinned || false
+
+    // Prioritas 1: Status Pin (pinned di atas)
+    if (aPinned && !bPinned) return -1
+    if (!aPinned && bPinned) return 1
+
+    // Prioritas 2: Waktu terbaru (newest first)
+    const aTime = new Date(a.last_message?.created_at || a.updated_at || 0).getTime()
+    const bTime = new Date(b.last_message?.created_at || b.updated_at || 0).getTime()
+    
+    return bTime - aTime
+  })
 })
 
 // --- LOGIC UTAMA SEARCH ---
@@ -116,8 +140,7 @@ const handleSearch = async (query) => {
   
   if (safeQuery === '') {
     searchResults.value = null 
-    loadingSearch.value = false;
-    await chatStore.fetchChats(); 
+    loadingSearch.value = false
     return
   }
 
@@ -143,9 +166,6 @@ function onCreated(chat) {
   selectChat(chat) 
 }
 
-/**
- * Menangani klik pada item chat.
- */
 async function selectChat(chat) {
   emit('select', chat)
 
@@ -158,43 +178,27 @@ async function selectChat(chat) {
   }
 }
 
-
-// 🎯 LOGIC MENU OVERLAY
+// 🎯 LOGIC MENU OVERLAY (Simplified)
 function openChatMenu(chat) {
-    // 1. Set data chat yang akan dioper ke overlay
-    selectedChatForMenu.value = chat;
-    
-    // 2. Cari data partisipan yang relevan (Anda sendiri)
-    const currentUserId = chatStore.currentUserId; // Ambil dari Pinia Getter
-    currentParticipantForMenu.value = chat.participants.find(p => 
-        String(p.user_id) === String(currentUserId)
-    );
-    
-    // 3. Buka overlay
-    menuOpen.value = true;
+    selectedChatForMenu.value = chat
+    menuOpen.value = true
 }
 
 function handleActionComplete(message) {
-    // Logika untuk menampilkan notifikasi/toast setelah aksi (Pin/Mute/Delete) selesai
-    console.log("Aksi Selesai:", message); 
-    // Anda mungkin ingin menambahkan toast/snackbar di sini.
+    console.log("Aksi Selesai:", message) 
 }
-
 </script>
 
 <style scoped>
+/* Scrollbar Style */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #d1d5db; 
+  background-color: #d1d5db;
   border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background-color: #f3f4f6; 
-}
-
-.font-namaApp {
-    font-family: Inter, sans-serif; 
+  background-color: transparent;
 }
 </style>

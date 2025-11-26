@@ -7,7 +7,7 @@
             </span>
             <button 
                 @click="$emit('cancel')" 
-                class="text-gray-500 hover:text-red-500 transition"
+                class="text-[#929292] hover:text-red-600 transition"
                 title="Batalkan Edit"
             >
                 <i class="fa-solid fa-xmark"></i> Batalkan
@@ -27,10 +27,16 @@
                 @click="handleConfirm"
                 :disabled="!editedText.trim() || editedText.trim() === initialText.trim()"
                 class="w-10 h-10 flex items-center justify-center rounded-lg transition"
-                :class="[!editedText.trim() || editedText.trim() === initialText.trim() ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-[#2AA8FF] text-white hover:bg-[#1C8DFF]']"
+                :class="[
+                // Disabled State: Abu-abu Netral
+                !editedText.trim() || editedText.trim() === initialText.trim() 
+                    ? 'bg-[#E9E9E9] text-[#929292] cursor-not-allowed' 
+                    // Active State: Biru Cerah #2AA8FF, Hover ke Varian Biru yang Lebih Gelap
+                    : 'bg-[#2AA8FF] text-white hover:bg-[#1C8DFF]'
+                ]"
                 title="Konfirmasi Edit"
             >
-                <i class="fa-solid fa-check"></i>
+                <img src="@/assets/send.svg" alt="Konfirmasi" class="w-5 h-5" /> 
             </button>
         </div>
     </div>
@@ -56,11 +62,9 @@ const editedText = ref(props.message.text || '');
 const initialText = ref(props.message.text || '');
 
 const handleConfirm = () => {
-    // Cek apakah ada perubahan dan bukan pesan kosong
     if (editedText.value.trim() && editedText.value.trim() !== initialText.value.trim()) {
         emit('confirm', editedText.value.trim());
     } else {
-        // Jika tidak ada perubahan atau input kosong, langsung batalkan
         emit('cancel');
     }
 };

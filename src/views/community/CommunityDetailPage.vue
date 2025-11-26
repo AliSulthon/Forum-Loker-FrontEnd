@@ -155,16 +155,31 @@ function goCreatePost() {
   router.push(`/communities/${route.params.id}/posts/create`)
 }
 
-function goPostDetail(post) {
-  router.push({
-    name: 'CommunityPostDetail',
-    params: { communityId: route.params.id, postId: post.id } 
-  })
-}
+// Di CommunityDetailPage.vue
 
+// ...
+function goPostDetail(post) {
+  // Ambil Community ID dari route saat ini
+  const communityId = Number(route.params.id); 
+
+  router.push({
+    name: 'community-post-detail', 
+    
+    params: {
+      communityId: communityId, 
+      postId: post.id 
+    }
+  });
+}
 function handleEditPost(post) {
   const communityId = Number(route.params.id);
-  router.push(`/communities/${communityId}/posts/${post.id}/edit`);
+  router.push({
+    name: 'community-post-edit',
+    params: {
+      communityId: communityId,
+      postId: post.id
+    }
+  });
 }
 
 

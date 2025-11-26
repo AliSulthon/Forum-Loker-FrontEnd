@@ -14,6 +14,7 @@ import CommunityCreatePage from "../views/community/CommunityCreatePage.vue";
 import CommunityEditPage from "../views/community/CommunityEditPage.vue";
 import CommunityPostCreatePage from "../views/communityPosts/CommunityPostCreatePage.vue";
 import CommunityPostEditPage from "../views/communityPosts/CommunityPostEditPage.vue";
+import CommunityPostDetailPage from "../views/communityPosts/CommunityPostDetailPage.vue";
 import ArticleList from "../views/ArticleList.vue";
 import ArticleCreate from "../views/ArticleCreate.vue";
 import ArticleEdit from "../views/ArticleEdit.vue";
@@ -42,6 +43,7 @@ const routes = [
             { path: "communities/:id/edit", name: "community-edit", component: CommunityEditPage },
             { path: "communities/:communityId/posts/create", name: "community-post-create", component: CommunityPostCreatePage },
             { path: "communities/:communityId/posts/:postId/edit", name: "community-post-edit", component: CommunityPostEditPage },
+            { path: "communities/:communityId/posts/:postId", name: "community-post-detail", component: CommunityPostDetailPage },
             // Article routes
             { path: "articles", name: "articles", component: ArticleList },
             { path: "articles/create", name: "article-create", component: ArticleCreate },

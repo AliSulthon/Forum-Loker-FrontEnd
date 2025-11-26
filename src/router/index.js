@@ -122,6 +122,17 @@ router.beforeEach((to, from, next) => {
     return next("/");
   }
 
+  // ✅ PAKSA RELOAD saat membuka chat
+  // Hanya reload jika:
+  // 1. Navigasi KE chat (to.path starts with /chat)
+  // 2. Navigasi DARI route yang BUKAN chat (from.path tidak starts with /chat)
+  // 3. Bukan initial load (from.name harus ada)
+  if (to.path.startsWith('/chat') && from.name && !from.path.startsWith('/chat')) {
+    // Hard reload page
+    window.location.href = to.fullPath;
+    return; // Stop navigation, window.location akan handle
+  }
+
   next();
 });
 

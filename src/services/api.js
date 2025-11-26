@@ -33,7 +33,6 @@ api.interceptors.request.use(
 // Response Interceptor - Handle 401 errors
 api.interceptors.response.use(
     (response) => {
-        // Success response, return as is
         return response;
     },
     (error) => {
@@ -42,10 +41,13 @@ api.interceptors.response.use(
             url: error.config?.url,
             message: error.response?.data?.message
         });
-        
+    
+        const isLoginRequest = error.config?.url?.includes('/login'); 
+
         // Handle 401 Unauthorized
-        if (error.response?.status === 401) {
-            console.warn('🚪 401 Unauthorized - Logging out...');
+    
+        if (error.response?.status === 401 && !isLoginRequest) {
+            console.warn('🚪 401 Unauthorized (Session Expired) - Logging out...');
             
             // Clear storage
             localStorage.removeItem('auth_token');
@@ -57,6 +59,7 @@ api.interceptors.response.use(
             window.location.href = '/login';
         }
         
+        // (catch block)
         return Promise.reject(error);
     }
 );

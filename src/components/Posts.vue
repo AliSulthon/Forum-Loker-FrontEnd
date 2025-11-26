@@ -227,14 +227,22 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, reactive, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import api from '../services/api';
+import { useAuthStore } from '@/stores/auth';
+
+const router = useRouter();
+const authStore = useAuthStore(); 
 
 const posts = ref([]);
 const loading = ref(true);
 const error = ref(null);
-const currentUser = ref(null);
 const isSubmitting = ref(false);
+
+
+//computed dari store
+const currentUser = computed(() => authStore.user);
 
 const newPost = reactive({ title: '', content: '' });
 const editingPostId = ref(null);
@@ -248,12 +256,9 @@ const editingCommentId = ref(null);
 const editCommentText = ref('');
 
 // --- HELPERS ---
-const checkCurrentUser = () => {
-  const userStr = localStorage.getItem('user');
-  if (userStr) currentUser.value = JSON.parse(userStr);
-};
 const isOwner = (post) => currentUser.value && post.user_id === currentUser.value.id;
 const isOwnerOfComment = (comment) => currentUser.value && comment.user_id === currentUser.value.id;
+
 const formatDate = (dateString) => {
   if (!dateString) return '';
   return new Date(dateString).toLocaleDateString('id-ID', {
@@ -266,12 +271,23 @@ const fetchPosts = async () => {
   try {
     const response = await api.get('/posts'); 
     posts.value = response.data.data ? response.data.data : response.data;
-  } catch (err) { console.error(err); error.value = 'Gagal memuat data.'; } 
-  finally { loading.value = false; }
+  } catch (err) { 
+    console.error(err); 
+    error.value = 'Gagal memuat data.'; 
+  } 
+  finally { 
+    loading.value = false; 
+  }
 };
 
 const handleCreatePost = async () => {
-  if (!currentUser.value) return alert("Silakan login!");
+  //Cek auth dari store
+  if (!authStore.isAuthenticated || !currentUser.value) {
+    alert("Silakan login terlebih dahulu!");
+    router.push('/login');
+    return;
+  }
+  
   isSubmitting.value = true;
   try {
     const response = await api.post('/posts', {
@@ -286,13 +302,20 @@ const handleCreatePost = async () => {
     alert("Postingan berhasil dibuat!");
   } catch (err) {
     console.error(err);
-    alert("Gagal posting.");
+    
+    // Handle unauthorized
+    if (err.response?.status === 401) {
+      alert("Sesi Anda telah berakhir. Silakan login kembali.");
+      authStore.logout();
+      router.push('/login');
+    } else {
+      alert("Gagal posting: " + (err.response?.data?.message || err.message));
+    }
   } finally {
     isSubmitting.value = false;
   }
 };
 
-// --- FUNGSI YANG HILANG SEBELUMNYA (Ini yang bikin error!) ---
 const startEditing = (post) => {
   editingPostId.value = post.id;
   editForm.title = post.title;
@@ -305,15 +328,28 @@ const cancelEdit = () => {
 
 const handleUpdatePost = async (id) => {
   try {
-    await api.put(`/posts/${id}`, { title: editForm.title, content: editForm.content });
+    await api.put(`/posts/${id}`, { 
+      title: editForm.title, 
+      content: editForm.content 
+    });
     const index = posts.value.findIndex(p => p.id === id);
     if (index !== -1) {
-        posts.value[index].title = editForm.title;
-        posts.value[index].content = editForm.content;
+      posts.value[index].title = editForm.title;
+      posts.value[index].content = editForm.content;
     }
     editingPostId.value = null;
     alert("Postingan berhasil diperbarui!");
-  } catch (err) { alert("Gagal update."); }
+  } catch (err) { 
+    console.error(err);
+    
+    //Handle unauthorized
+    if (err.response?.status === 401) {
+      authStore.logout();
+      router.push('/login');
+    } else {
+      alert("Gagal update.");
+    }
+  }
 };
 
 const handleDeletePost = async (id) => {
@@ -322,13 +358,27 @@ const handleDeletePost = async (id) => {
     await api.delete(`/posts/${id}`);
     posts.value = posts.value.filter(p => p.id !== id);
     alert("Postingan dihapus.");
-  } catch (err) { alert("Gagal hapus."); }
+  } catch (err) { 
+    console.error(err);
+    
+    //Handle unauthorized
+    if (err.response?.status === 401) {
+      authStore.logout();
+      router.push('/login');
+    } else {
+      alert("Gagal hapus.");
+    }
+  }
 };
 
 // --- COMMENT LOGIC ---
 const toggleComments = async (postId) => {
-  if (expandedPostId.value === postId) expandedPostId.value = null;
-  else { expandedPostId.value = postId; await fetchComments(postId); }
+  if (expandedPostId.value === postId) {
+    expandedPostId.value = null;
+  } else { 
+    expandedPostId.value = postId; 
+    await fetchComments(postId); 
+  }
 };
 
 const fetchComments = async (postId) => {
@@ -336,59 +386,111 @@ const fetchComments = async (postId) => {
   try {
     const response = await api.get(`/posts/${postId}/comments`);
     postComments.value[postId] = response.data.data;
-  } catch (err) { console.error(err); } 
-  finally { loadingComments.value[postId] = false; }
+  } catch (err) { 
+    console.error(err); 
+  } 
+  finally { 
+    loadingComments.value[postId] = false; 
+  }
 };
 
 const handleCreateComment = async (postId) => {
-   const text = newCommentTexts.value[postId];
-   if (!text || !text.trim()) return;
-   try {
-     // FIX: Pakai 'content' sesuai request backend
-     const response = await api.post(`/posts/${postId}/comments`, { content: text });
-     
-     if (!postComments.value[postId]) postComments.value[postId] = [];
-     postComments.value[postId].unshift(response.data.data);
-     
-     const postIndex = posts.value.findIndex(p => p.id === postId);
-     if (postIndex !== -1) posts.value[postIndex].comments_count++;
+  const text = newCommentTexts.value[postId];
+  if (!text || !text.trim()) return;
+  
+  if (!authStore.isAuthenticated) {
+    alert("Silakan login untuk berkomentar!");
+    router.push('/login');
+    return;
+  }
+  
+  try {
+    const response = await api.post(`/posts/${postId}/comments`, { 
+      content: text 
+    });
+    
+    if (!postComments.value[postId]) postComments.value[postId] = [];
+    postComments.value[postId].unshift(response.data.data);
+    
+    const postIndex = posts.value.findIndex(p => p.id === postId);
+    if (postIndex !== -1) posts.value[postIndex].comments_count++;
 
-     newCommentTexts.value[postId] = '';
-   } catch (err) { 
-     console.error(err);
-     alert("Gagal kirim komentar: " + (err.response?.data?.message || err.message)); 
-   }
+    newCommentTexts.value[postId] = '';
+  } catch (err) { 
+    console.error(err);
+    
+    if (err.response?.status === 401) {
+      alert("Sesi Anda telah berakhir. Silakan login kembali.");
+      authStore.logout();
+      router.push('/login');
+    } else {
+      alert("Gagal kirim komentar: " + (err.response?.data?.message || err.message));
+    }
+  }
 };
 
 const startEditingComment = (comment) => {
-   editingCommentId.value = comment.id;
-   editCommentText.value = comment.content; 
+  editingCommentId.value = comment.id;
+  editCommentText.value = comment.content; 
 };
 
 const handleUpdateComment = async (commentId, postId) => {
-   try {
-      await api.put(`/comments/${commentId}`, { content: editCommentText.value });
-      
-      const comments = postComments.value[postId];
-      const index = comments.findIndex(c => c.id === commentId);
-      if (index !== -1) comments[index].content = editCommentText.value;
-      
-      editingCommentId.value = null;
-   } catch (err) { alert("Gagal update komentar"); }
+  try {
+    await api.put(`/comments/${commentId}`, { 
+      content: editCommentText.value 
+    });
+    
+    const comments = postComments.value[postId];
+    const index = comments.findIndex(c => c.id === commentId);
+    if (index !== -1) comments[index].content = editCommentText.value;
+    
+    editingCommentId.value = null;
+  } catch (err) { 
+    console.error(err);
+    
+    if (err.response?.status === 401) {
+      authStore.logout();
+      router.push('/login');
+    } else {
+      alert("Gagal update komentar");
+    }
+  }
 };
 
 const handleDeleteComment = async (commentId, postId) => {
-   if(!confirm("Hapus komentar?")) return;
-   try {
-      await api.delete(`/comments/${commentId}`);
-      postComments.value[postId] = postComments.value[postId].filter(c => c.id !== commentId);
-      const postIndex = posts.value.findIndex(p => p.id === postId);
-      if (postIndex !== -1 && posts.value[postIndex].comments_count > 0) posts.value[postIndex].comments_count--;
-   } catch (err) { alert("Gagal hapus komentar"); }
+  if (!confirm("Hapus komentar?")) return;
+  try {
+    await api.delete(`/comments/${commentId}`);
+    postComments.value[postId] = postComments.value[postId].filter(c => c.id !== commentId);
+    const postIndex = posts.value.findIndex(p => p.id === postId);
+    if (postIndex !== -1 && posts.value[postIndex].comments_count > 0) {
+      posts.value[postIndex].comments_count--;
+    }
+  } catch (err) { 
+    console.error(err);
+    
+  
+    if (err.response?.status === 401) {
+      authStore.logout();
+      router.push('/login');
+    } else {
+      alert("Gagal hapus komentar");
+    }
+  }
 };
-
 onMounted(() => {
-  checkCurrentUser();
+  console.log('=== DEBUG INFO (Posts.vue) ===');
+  console.log('Auth Store Token:', authStore.token);
+  console.log('Auth Store User:', authStore.user?.name);
+  console.log('Is Authenticated:', authStore.isAuthenticated);
+  console.log('localStorage auth_token:', localStorage.getItem('auth_token'));
+  console.log('localStorage user_info:', localStorage.getItem('user_info'));
+  console.log('sessionStorage auth_token:', sessionStorage.getItem('auth_token'));
+  console.log('sessionStorage user_info:', sessionStorage.getItem('user_info'));
+  console.log('================================');
+  
+  authStore.loadFromStorage();
+  
   fetchPosts();
 });
 </script>

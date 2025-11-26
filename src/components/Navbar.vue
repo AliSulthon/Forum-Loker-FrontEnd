@@ -186,6 +186,7 @@ const toggleProfile = () => {
 
 const handleLogout = () => {
   authStore.logout();
+  showProfileMenu.value = false;
   router.push("/");
 };
 
@@ -197,6 +198,7 @@ const handleClickOutside = (e) => {
 };
 
 onMounted(() => {
+  authStore.loadFromStorage()
   document.addEventListener("click", handleClickOutside);
 });
 

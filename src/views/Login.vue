@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 relative p-4 font-sans overflow-hidden">
+  <div class="min-h-screen flex items-center justify-center bg-[#f7f7f7] relative p-4 font-sans overflow-hidden">
     
     <div class="absolute inset-0 z-0 opacity-40 pointer-events-none" 
          style="background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 24px 24px;">
@@ -10,7 +10,7 @@
         <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blueHeadline rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-pulse-slow" style="animation-delay: 2s;"></div>
     </div>
 
-    <div class="z-10 bg-base shadow-2xl rounded-[30px] flex flex-col md:flex-row w-full max-w-5xl overflow-hidden animate-fadein border border-white/50">
+    <div class="z-10 bg-base shadow-2xl rounded-[30px] flex flex-col md:flex-row w-full max-w-5xl overflow-hidden animate-fadein border border-white/50 relative">
 
       <div class="hidden md:flex w-full md:w-[45%] bg-gradient-to-br from-blueHeadline to-bluePrimary p-10 lg:p-14 text-base flex-col justify-center relative overflow-hidden">
         
@@ -20,29 +20,32 @@
         <div class="relative z-10">
           <img 
             src="@/assets/logo.png" 
-            alt="Logo Forum Loker" 
-            class="w-28 mb-8 drop-shadow-md hover:scale-105 transition-transform duration-300"
+            alt="Logo Sevanta" 
+            class="w-40 mb-8 drop-shadow-xl hover:scale-105 transition-transform duration-500"
+            style="filter: brightness(0) invert(1);"
           >
 
-          <h2 class="font-namaApp text-3xl font-bold mb-2 uppercase tracking-wide opacity-90">Welcome to</h2>
-          <h1 class="font-namaApp text-5xl lg:text-6xl font-black mb-6 tracking-tighter text-white drop-shadow-sm leading-tight">
-            FORUM<br>LOKER
+          <h2 class="font-namaApp text-2xl font-bold mb-2 uppercase tracking-widest opacity-90 text-blue-50">Welcome to</h2>
+          
+          <h1 class="font-namaApp text-6xl font-black mb-6 tracking-tight text-white drop-shadow-sm leading-none">
+            SEVANTA
           </h1>
+          
           <p class="text-blue-50 text-sm leading-relaxed font-medium opacity-90 max-w-xs">
-            Temukan peluang karir terbaikmu dan bangun masa depan profesional bersama komunitas kami.
+            Platform komunitas profesional untuk berbagi wawasan, artikel, dan peluang karir.
           </p>
         </div>
       </div>
 
       <div class="w-full md:w-[55%] bg-base p-8 lg:p-16 flex flex-col justify-center">
         
-        <div class="text-center mb-6">
-          
+        <div class="text-center mb-8">
           <div class="flex justify-center md:hidden mb-6">
-            <img src="@/assets/logo.png" alt="Logo Forum Loker" class="w-24 drop-shadow-sm">
+            <img src="@/assets/logo.png" alt="Logo Sevanta" class="w-24 drop-shadow-md">
           </div>
 
-          <h2 class="text-3xl font-bold text-headline font-namaApp tracking-tight">Sign In</h2>
+          <h2 class="text-4xl font-bold text-headline font-namaApp tracking-tight">Sign In</h2>
+          
           <p class="text-detail text-sm mt-2 font-medium">
             Masuk untuk mengakses akun Anda
           </p>
@@ -70,7 +73,7 @@
               v-model="email"
               type="email"
               placeholder="Email Address"
-              class="w-full pl-12 pr-4 py-4 bg-gray-50 border border-transparent rounded-xl text-sm font-semibold text-headline placeholder-detail focus:outline-none focus:ring-2 focus:ring-blueHeadline focus:bg-base focus:border-transparent transition-all duration-300"
+              class="w-full pl-12 pr-4 py-4 bg-[#f7f7f7] border border-transparent rounded-xl text-sm font-semibold text-headline placeholder-detail focus:outline-none focus:ring-2 focus:ring-blueHeadline focus:bg-base focus:border-transparent transition-all duration-300"
               required
             />
           </div>
@@ -85,7 +88,7 @@
               v-model="password"
               :type="showPassword ? 'text' : 'password'"
               placeholder="Password"
-              class="w-full pl-12 pr-16 py-4 bg-gray-50 border border-transparent rounded-xl text-sm font-semibold text-headline placeholder-detail focus:outline-none focus:ring-2 focus:ring-blueHeadline focus:bg-base focus:border-transparent transition-all duration-300"
+              class="w-full pl-12 pr-16 py-4 bg-[#f7f7f7] border border-transparent rounded-xl text-sm font-semibold text-headline placeholder-detail focus:outline-none focus:ring-2 focus:ring-blueHeadline focus:bg-base focus:border-transparent transition-all duration-300"
               required
             />
             <button 
@@ -99,7 +102,7 @@
 
           <div class="flex items-center justify-between text-sm">
              <label class="flex items-center text-detail cursor-pointer hover:text-headline transition-colors group">
-                <input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-blueHeadline focus:ring-blueHeadline accent-blueHeadline cursor-pointer">
+                <input type="checkbox" v-model="rememberMe" class="w-4 h-4 rounded border-gray-300 text-blueHeadline focus:ring-blueHeadline accent-blueHeadline cursor-pointer">
                 <span class="ml-2 font-medium group-hover:text-headline transition-colors">Ingat Saya</span>
              </label>
              <a href="#" class="text-blueHeadline font-bold hover:text-bluePrimary hover:underline transition-colors">Lupa Password?</a>
@@ -139,6 +142,7 @@
 import { ref } from "vue"
 import { useRouter } from "vue-router"
 import { loginUser } from "@/services/auth.js"
+import { useAuthStore } from "@/stores/auth"
 
 // STATE
 const email = ref("")
@@ -146,26 +150,44 @@ const password = ref("")
 const showPassword = ref(false)
 const isLoading = ref(false)
 const errorMessage = ref("")
+const rememberMe = ref(false)
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 // HANDLE LOGIN
 async function handleLogin() {
   isLoading.value = true
   errorMessage.value = ""
-
+  
   try {
     const res = await loginUser(email.value, password.value)
-
-    if (!res.error) {
-      localStorage.setItem("auth_token", res.data.access_token)
-      localStorage.setItem("user_info", JSON.stringify(res.data.user))
-      // Redirect to home and refresh page to update navbar
-      window.location.href = "/"
+    
+    if (!res.error && res.data?.access_token) {
+      authStore.setAuth(
+        res.data.access_token, 
+        res.data.user, 
+        rememberMe.value
+      )
+      
+      await new Promise(resolve => setTimeout(resolve, 50))
+      
+      console.log('After login - Store token:', authStore.token)
+      console.log('After login - Store user:', authStore.user)
+      console.log('After login - isAuthenticated:', authStore.isAuthenticated)
+      
+      // Redirect
+      const redirect = router.currentRoute.value.query.redirect || '/'
+      await router.push(redirect)
+      
+    } else {
+      errorMessage.value = res.message || "Login gagal."
     }
-
   } catch (err) {
-    errorMessage.value = err.response?.data?.message || "Login gagal."
+    console.error('Login error:', err)
+    errorMessage.value = 
+      err.response?.data?.message || 
+      "Login gagal. Periksa email dan password."
   } finally {
     isLoading.value = false
   }
@@ -173,7 +195,6 @@ async function handleLogin() {
 </script>
 
 <style scoped>
-
 @keyframes fadein {
   from { opacity: 0; transform: translateY(30px) scale(0.95); }
   to { opacity: 1; transform: translateY(0) scale(1); }

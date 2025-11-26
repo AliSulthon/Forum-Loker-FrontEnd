@@ -56,14 +56,28 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     const publicPages = ['/login', '/register', '/', '/articles'];
-    const authRequired = !publicPages.includes(to.path);
-    const loggedIn = localStorage.getItem('auth_token');
+    
+    const isPublicPage = publicPages.some(page => 
+        to.path === page || to.path.startsWith(page + '/')
+    );
+    
+    const authRequired = !isPublicPage;
+    
+    const token =
+        localStorage.getItem("auth_token") ||
+        sessionStorage.getItem("auth_token");
+    const userInfo = 
+        localStorage.getItem("user_info") ||
+        sessionStorage.getItem("user_info");
 
-    if (authRequired && !loggedIn) {
-        return next('/login');
+    if (authRequired && !token) {
+        return next({
+            path: '/login',
+            query: { redirect: to.fullPath } 
+        });
     }
 
-    if (loggedIn && to.path === '/login') {
+    if (token && (to.path === '/login' || to.path === '/register')) {
         return next('/');
     }
 

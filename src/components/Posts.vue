@@ -75,12 +75,21 @@
       >
         <div class="p-6 relative">
             
-            <div class="absolute top-6 right-6 z-10">
-              <button class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition">
+            <div class="absolute top-6 right-6 z-10" ref="postMenuRef">
+              <button @click="togglePostMenu(post.id)" class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM17.25 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
                 </svg>
               </button>
+              <!-- Dropdown Menu -->
+              <div v-if="openPostMenuId === post.id" class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+                <button @click="handleBookmarkPost(post)" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+                  </svg>
+                  Bookmark
+                </button>
+              </div>
             </div>
 
             <div class="flex-1"> 
@@ -223,17 +232,31 @@
 
       </div>
     </div>
+
+    <!-- Bookmark Modal -->
+    <BookmarkModal
+      :show="showBookmarkModal"
+      :item-type="bookmarkItem.type"
+      :item-id="bookmarkItem.id"
+      :item-title="bookmarkItem.title"
+      @close="showBookmarkModal = false"
+      @saved="handleBookmarkSaved"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, reactive, computed } from 'vue';
+import { ref, onMounted, reactive, computed, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '../services/api';
 import { useAuthStore } from '@/stores/auth';
 
 const router = useRouter();
 const authStore = useAuthStore(); 
+import { useBookmarksStore } from '../stores/bookmarks';
+import BookmarkModal from './BookmarkModal.vue';
+
+const bookmarksStore = useBookmarksStore();
 
 const posts = ref([]);
 const loading = ref(true);
@@ -254,6 +277,10 @@ const loadingComments = ref({});
 const newCommentTexts = ref({});
 const editingCommentId = ref(null);
 const editCommentText = ref('');
+const openPostMenuId = ref(null);
+const postMenuRef = ref(null);
+const showBookmarkModal = ref(false);
+const bookmarkItem = ref({ type: '', id: null, title: '' });
 
 // --- HELPERS ---
 const isOwner = (post) => currentUser.value && post.user_id === currentUser.value.id;
@@ -478,6 +505,33 @@ const handleDeleteComment = async (commentId, postId) => {
     }
   }
 };
+
+// --- BOOKMARK LOGIC ---
+const togglePostMenu = (postId) => {
+  openPostMenuId.value = openPostMenuId.value === postId ? null : postId;
+};
+
+const handleBookmarkPost = (post) => {
+  bookmarkItem.value = {
+    type: 'post',
+    id: post.id,
+    title: post.title
+  };
+  showBookmarkModal.value = true;
+  openPostMenuId.value = null;
+};
+
+const handleBookmarkSaved = (message) => {
+  showBookmarkModal.value = false;
+  alert(message);
+};
+
+// Click outside to close menu
+const handleClickOutside = (event) => {
+  if (postMenuRef.value && !postMenuRef.value.contains(event.target)) {
+    openPostMenuId.value = null;
+  }
+};
 onMounted(() => {
   console.log('=== DEBUG INFO (Posts.vue) ===');
   console.log('Auth Store Token:', authStore.token);
@@ -492,6 +546,11 @@ onMounted(() => {
   authStore.loadFromStorage();
   
   fetchPosts();
+  document.addEventListener('click', handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside);
 });
 </script>
 

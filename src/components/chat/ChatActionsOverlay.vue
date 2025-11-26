@@ -210,7 +210,7 @@ async function toggleMute() {
 }
 
 async function handleDelete() {
-    if (!confirm(`Apakah Anda yakin ingin menghapus chat '${chatTitle.value}' hanya untuk Anda?`)) {
+    if (!confirm(`Apakah Anda yakin ingin menghapus chat '${chatTitle.value}'?`)) {
         return;
     }
 

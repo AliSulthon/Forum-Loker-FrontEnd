@@ -145,9 +145,17 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const res = await updatePhotoService(formData)
       // API returns user object in res.user for photo upload
+      // AND photo_url in res.data
       if (res.success && res.user) {
-        updateUser(res.user)
-        return res.user
+        const updatedUser = { ...res.user }
+
+        // Ensure photo_url is present if provided in data
+        if (res.data && res.data.photo_url) {
+          updatedUser.photo_url = res.data.photo_url
+        }
+
+        updateUser(updatedUser)
+        return updatedUser
       }
       return res
     } catch (error) {

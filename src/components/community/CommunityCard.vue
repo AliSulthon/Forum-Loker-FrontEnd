@@ -20,7 +20,7 @@
     </h2>
 
     <!-- Deskripsi -->
-    <p class="text-base text-gray-700 line-clamp-3">
+    <p class="text-base text-detail line-clamp-3">
       {{ community.description }}
     </p>
 

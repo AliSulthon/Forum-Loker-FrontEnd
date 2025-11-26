@@ -6,7 +6,7 @@
         <h1 class="font-namaApp text-4xl font-black text-primary tracking-tight mb-2">
           <span class="text-black">Community</span> <span class="text-primary-light">Hub</span>
         </h1>
-        <p class="text-secondary font-medium max-w-xl">
+        <p class="text-detail font-medium max-w-xl">
           Find and join communities that interest you.
         </p>
       </div>

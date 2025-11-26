@@ -1,32 +1,32 @@
 <template>
-  <form class="space-y-5" @submit.prevent="onSubmit">
-    <!-- Community Name -->
+  <form class="space-y-6" @submit.prevent="onSubmit">
+    
     <div>
-      <label class="block text-base text-secondary mb-1">Community Name</label>
+      <label class="block text-sm font-bold text-primary mb-2">Community Name</label>
       <input
         v-model="form.name"
         type="text"
         placeholder="Enter community name"
         required
-        class="w-full px-4 py-3 rounded-xl border border-primary focus:border-primary-light focus:ring-1 focus:ring-primary-light outline-none transition"
+        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-sm"
       />
     </div>
 
-    <!-- Description -->
     <div>
-      <label class="block text-base text-secondary mb-1">Description</label>
+      <label class="block text-sm font-bold text-primary mb-2">Description</label>
       <textarea
         v-model="form.description"
         placeholder="Enter community description"
         required
-        class="w-full px-4 py-3 rounded-xl border border-primary focus:border-primary-light focus:ring-1 focus:ring-primary-light outline-none h-32 transition resize-none"
+        rows="4"
+        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-sm resize-none"
       ></textarea>
     </div>
 
-    <!-- Submit Button -->
     <button
       type="submit"
-      class="w-full py-3 bg-primary text-white rounded-xl hover:bg-primary-light transition font-medium transform hover:scale-105 duration-200 cursor-pointer"
+      class="w-full py-3 bg-primary text-white rounded-xl font-bold shadow-md shadow-primary/20 
+             hover:bg-primary/90 transition-all transform hover:scale-[1.01] duration-200 cursor-pointer"
     >
       {{ isEdit ? "Save Changes" : "Create Community" }}
     </button>
@@ -57,7 +57,6 @@ const isEdit = computed(() => props.initialData !== null);
 
 // Submit handler
 function onSubmit() {
-  // HTML5 required akan otomatis mencegah submit jika kosong
   emit("submit", { ...form });
 }
 </script>

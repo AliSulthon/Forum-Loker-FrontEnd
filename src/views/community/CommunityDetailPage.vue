@@ -1,73 +1,101 @@
 <template>
+
 <div class="max-w-5xl mx-auto py-10 px-4">
 
-    <!-- Back Button -->
     <button
-      class="flex items-center gap-2 text-primary font-medium mb-6 hover:text-primary-light transition"
+      class="flex items-center gap-2 text-primary font-medium mb-8 
+             hover:text-primary-dark transition-all duration-200 
+             transform hover:-translate-x-1" 
       @click="router.push('/communities')"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
       </svg>
-      Back
+      Back to Communities
     </button>
 
-    <!-- Community Card -->
-    <div class="bg-white border border-primary rounded-xl p-8 shadow-sm hover:shadow-md">
+    <div class="bg-white border border-blueLight rounded-2xl p-8 shadow-xl">
 
-        <div class="flex items-center justify-between mb-3">
-            <h1 class="text-3xl font-bold text-primary">
-                {{ community?.name }}
-            </h1>
+        <div class="flex items-start justify-between mb-4">
+            <div>
+                <h1 class="text-4xl font-bold text-black mb-1">
+                    {{ community?.name }}
+                </h1>
+            </div>
 
-            <!-- OWNER ONLY ACTIONS -->
-            <div v-if="isOwner" class="flex items-center gap-3">
-                <!-- Edit -->
-                <button class="px-4 py-1.5 bg-yellow-400 text-black rounded-lg hover:bg-yellow-300 transition" @click="goEdit">
-                    Edit
+            <div v-if="isOwner" class="relative z-20">
+                <button 
+                    @click.stop="showMenu = !showMenu" 
+                    class="p-1 rounded-full text-gray-400 hover:text-primary transition-all"
+                    title="Community actions"
+                >
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                 </button>
-
-                <!-- Delete -->
-                <button class="px-4 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-400 transition" @click="confirmDelete">
-                    Delete
-                </button>
+                
+                <div 
+                    v-if="showMenu" 
+                    @mouseleave="showMenu = false" 
+                    class="absolute right-0 top-8 w-32 bg-white rounded-xl shadow-xl border border-gray-100 py-2 overflow-hidden"
+                >
+                    <button 
+                        @click="goEdit(); showMenu = false" 
+                        class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-primary-light/10 hover:text-primary transition-colors"
+                    >
+                        Edit
+                    </button>
+                    <button 
+                        @click="confirmDelete(); showMenu = false" 
+                        class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                        Delete
+                    </button>
+                </div>
             </div>
         </div>
 
-        <p class="text-secondary mb-4">
+        <p class="text-gray-600 whitespace-pre-line mb-2">
             {{ community?.description }}
         </p>
+        <hr class="mt-6 border-gray-100"/>
     </div>
 
-    <!-- Posts Header -->
-    <div class="flex items-center justify-between mt-10 mb-5">
-        <h2 class="text-2xl font-semibold text-primary">Posts</h2>
 
-        <!-- Create Post Button -->
-        <button class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary-light transition-transform transform hover:scale-105 duration-200 cursor-pointer" @click="goCreatePost">
+    <div class="flex items-center justify-between mt-12 mb-5">
+        <h2 class="text-2xl font-bold text-black">Community Posts</h2>
+
+        <button 
+          class="flex items-center gap-2 px-5 py-2 rounded-xl bg-primary text-white font-bold shadow-md shadow-primary/20 
+                 hover:bg-primary/90 hover:scale-[1.02] transition-all duration-200 cursor-pointer" 
+          @click="goCreatePost"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
             Create Post
         </button>
     </div>
 
-    <!-- Posts List -->
     <CommunityPostList 
       :posts="posts" 
       :currentUserId="authStore.user?.id"
       @select="goPostDetail"
       @edit="handleEditPost"
       @delete="handleDeletePost"
+      class="mt-6"
     />
 
-    <!-- Empty State -->
-    <div v-if="posts.length === 0" class="text-center py-10 text-secondary">
+
+    <div v-if="posts.length === 0" class="text-center py-10 text-detail bg-white/50 backdrop-blur-sm rounded-xl border border-gray-100 mt-6">
       <p>No posts yet. Be the first to create one!</p>
     </div>
 
 </div>
+
 </template>
 
+
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue' // Tambahkan 'ref'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/auth.js'
 import { useCommunityStore } from '../../stores/communityStore.js'
@@ -81,8 +109,13 @@ const authStore = useAuthStore()
 const communityStore = useCommunityStore()
 const communityPostStore = useCommunityPostStore()
 
+// State untuk mengontrol visibilitas dropdown menu
+const showMenu = ref(false)
+
 onMounted(async () => {
-  await communityStore.fetchCommunities()
+  if (!communityStore.communities.length) {
+    await communityStore.fetchCommunities()
+  }
   await communityPostStore.fetchPosts(Number(route.params.id))
 })
 
@@ -94,18 +127,19 @@ const posts = computed(() =>
   communityPostStore.getByCommunity(Number(route.params.id))
 )
 
-// cek apakah user adalah owner
 const isOwner = computed(() => {
   if (!authStore.user || !community.value) return false
   return authStore.user.id === community.value.user_id
 })
+
+// === COMMUNITY ACTIONS ===
 
 function goEdit() {
   router.push(`/communities/${route.params.id}/edit`)
 }
 
 function confirmDelete() {
-  if (confirm("Are you sure you want to delete this community?")) {
+  if (confirm(`Are you sure you want to delete the community "${community.value.name}"? This action cannot be undone.`)) {
     deleteCommunity()
   }
 }
@@ -115,6 +149,8 @@ async function deleteCommunity() {
   router.push('/communities')
 }
 
+// === POST ACTIONS ===
+
 function goCreatePost() {
   router.push(`/communities/${route.params.id}/posts/create`)
 }
@@ -122,12 +158,11 @@ function goCreatePost() {
 function goPostDetail(post) {
   router.push({
     name: 'CommunityPostDetail',
-    params: { id: post.id }
+    params: { communityId: route.params.id, postId: post.id } 
   })
 }
 
 function handleEditPost(post) {
-  // community id tetap dari route
   const communityId = Number(route.params.id);
   router.push(`/communities/${communityId}/posts/${post.id}/edit`);
 }
@@ -136,12 +171,10 @@ function handleEditPost(post) {
 async function handleDeletePost(post) {
   const communityId = Number(route.params.id);
 
-  if (confirm("Are you sure you want to delete this post?")) {
-    communityPostStore.deletePost(communityId, post.id);
-    // refresh agar UI update
+  if (confirm(`Are you sure you want to delete the post "${post.title}"?`)) {
+    await communityPostStore.deletePost(communityId, post.id);
     await communityPostStore.fetchPosts(communityId);
   }
 }
-
 
 </script>

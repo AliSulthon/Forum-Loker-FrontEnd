@@ -30,8 +30,10 @@ onMounted(async () => {
     loading.value = true;
     await authStore.fetchProfile();
     populateProfileForm();
+    populateProfileForm();
   } catch (error) {
-    showMessage('error', 'Failed to load profile');
+    console.error('Profile load error:', error);
+    showMessage('error', 'Failed to load profile: ' + (error.response?.data?.message || error.message));
   } finally {
     loading.value = false;
   }

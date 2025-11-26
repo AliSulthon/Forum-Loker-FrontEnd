@@ -1,6 +1,14 @@
 // stores/auth.js
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import {
+  loginUser as loginService,
+  getProfile,
+  updateProfile as updateProfileService,
+  updatePassword as updatePasswordService,
+  updatePhoto as updatePhotoService,
+  deletePhoto as deletePhotoService
+} from '../services/auth'
 
 export const useAuthStore = defineStore('auth', () => {
   // State
@@ -15,10 +23,10 @@ export const useAuthStore = defineStore('auth', () => {
   // Actions
   function loadFromStorage() {
     // Cek localStorage dulu, lalu sessionStorage
-    const storedToken = localStorage.getItem('auth_token') || 
-                        sessionStorage.getItem('auth_token')
-    const storedUser = localStorage.getItem('user_info') || 
-                       sessionStorage.getItem('user_info')
+    const storedToken = localStorage.getItem('auth_token') ||
+      sessionStorage.getItem('auth_token')
+    const storedUser = localStorage.getItem('user_info') ||
+      sessionStorage.getItem('user_info')
 
     if (storedToken) {
       token.value = storedToken
@@ -72,13 +80,90 @@ export const useAuthStore = defineStore('auth', () => {
 
   function updateUser(userData) {
     user.value = userData
-    
+
     // Update di storage juga
-    const storage = localStorage.getItem('auth_token') 
-      ? localStorage 
+    const storage = localStorage.getItem('auth_token')
+      ? localStorage
       : sessionStorage
-    
+
     storage.setItem('user_info', JSON.stringify(userData))
+  }
+
+  async function login(email, password, remember = false) {
+    try {
+      const res = await loginService(email, password)
+      if (res.data?.access_token) {
+        setAuth(res.data.access_token, res.data.user, remember)
+      }
+      return res
+    } catch (error) {
+      throw error
+    }
+  }
+
+  async function fetchProfile() {
+    try {
+      const res = await getProfile()
+      if (res.data) {
+        updateUser(res.data)
+      } else if (res.user) { // Handle potential different response structure
+        updateUser(res.user)
+        return res.user
+      }
+      return res.data
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+      // Fallback to stored user if available
+      if (user.value) {
+        console.warn('Using cached user data')
+        return user.value
+      }
+      throw error
+    }
+  }
+
+  async function updateProfile(data) {
+    try {
+      const res = await updateProfileService(data)
+      if (res.data) {
+        updateUser(res.data)
+      }
+      return res.data
+    } catch (error) {
+      throw error
+    }
+  }
+
+  async function updatePassword(data) {
+    try {
+      await updatePasswordService(data)
+    } catch (error) {
+      throw error
+    }
+  }
+
+  async function updatePhoto(formData) {
+    try {
+      const res = await updatePhotoService(formData)
+      if (res.data) {
+        updateUser(res.data)
+      }
+      return res.data
+    } catch (error) {
+      throw error
+    }
+  }
+
+  async function deletePhoto() {
+    try {
+      const res = await deletePhotoService()
+      if (res.data) {
+        updateUser(res.data)
+      }
+      return res.data
+    } catch (error) {
+      throw error
+    }
   }
 
   // Initialize: Load dari storage saat store pertama kali dibuat
@@ -88,16 +173,22 @@ export const useAuthStore = defineStore('auth', () => {
     // State
     token,
     user,
-    
+
     // Getters
     isAuthenticated,
     userName,
     userEmail,
-    
+
     // Actions
     loadFromStorage,
     setAuth,
     logout,
-    updateUser
+    updateUser,
+    login,
+    fetchProfile,
+    updateProfile,
+    updatePassword,
+    updatePhoto,
+    deletePhoto
   }
 })

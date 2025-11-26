@@ -59,8 +59,6 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useChatStore } from '@/stores/chat/useChatStore'
-// 👇 Import useRouter untuk navigasi
-import { useRouter } from 'vue-router'; 
 
 const props = defineProps({
   isOpen: {
@@ -75,7 +73,6 @@ const props = defineProps({
 
 const emit = defineEmits(['update:isOpen', 'action-complete'])
 const chatStore = useChatStore()
-const router = useRouter() // 👇 Inisialisasi router
 
 const loading = ref(false)
 const currentAction = ref(null) 
@@ -94,7 +91,7 @@ const chatTitle = computed(() => {
     return "Chat Opsi";
 })
 
-// ✅ Cek status pin
+// ✅ PERBAIKAN: Cek status pin dari participants menggunakan id
 const isPinned = computed(() => {
     if (!props.chat.participants) return false;
     const currentUserId = chatStore.currentUserId;
@@ -106,32 +103,52 @@ const isPinned = computed(() => {
     return participant?.pinned ?? false;
 });
 
-// ✅ Cek status mute
+// ✅ PERBAIKAN: Gunakan field 'muted' dari backend (lebih reliable)
 const isMuted = computed(() => {
-    if (!props.chat.participants) return false;
+    if (!props.chat.participants) {
+        console.log('❌ No participants found');
+        return false;
+    }
     const currentUserId = chatStore.currentUserId;
     
     const participant = props.chat.participants.find(p => 
         String(p.id) === String(currentUserId)
     );
-
+    
+    console.log('🔍 Checking mute status:', {
+        currentUserId,
+        participant,
+        muted_from_backend: participant?.muted,  // ✅ Langsung pakai dari backend
+        mute_until: participant?.mute_until
+    });
+    
+    // ✅ Prioritas 1: Gunakan field 'muted' dari backend (sudah dihitung di ChatResource)
     if (participant && typeof participant.muted !== 'undefined') {
         return participant.muted;
     }
     
+    // ✅ Fallback: Hitung manual jika field 'muted' tidak ada
     const muteUntil = participant?.mute_until;
-    return muteUntil && new Date(muteUntil) > new Date();
+    const isMutedStatus = muteUntil && new Date(muteUntil) > new Date();
+    
+    console.log('📊 Mute fallback calculation:', {
+        muteUntil,
+        now: new Date(),
+        isMutedStatus
+    });
+    
+    return isMutedStatus; 
 });
 
 function close() {
-    emit('update:isOpen', false)
+  emit('update:isOpen', false)
 }
 
 // --- HANDLER LOGIC ---
 async function togglePin() {
     currentAction.value = 'pin';
     loading.value = true;
-    const wasPinned = isPinned.value; 
+    const wasPinned = isPinned.value; // Simpan status sebelum update
     try {
         const payload = { pinned: !isPinned.value };
         await chatStore.updateChatStatus(props.chat.id, payload);
@@ -163,14 +180,29 @@ async function toggleMute() {
         message = 'Chat berhasil dimute selama 1 jam.';
     }
 
+    console.log('🚀 Sending mute request:', {
+        chatId: props.chat.id,
+        payload,
+        wasMuted,
+        currentParticipants: props.chat.participants
+    });
+
     try {
-        await chatStore.updateChatStatus(props.chat.id, payload);
+        const response = await chatStore.updateChatStatus(props.chat.id, payload);
+        console.log('✅ Mute response:', response);
+        console.log('✅ Response data:', response?.data);
+        
+        // Force refresh chat data dari store
         await chatStore.fetchChatById(props.chat.id);
+        
+        console.log('📦 Updated chat after refresh:', props.chat);
+        console.log('📊 New isMuted status:', isMuted.value);
         
         close();
         emit('action-complete', message);
     } catch (error) {
         console.error(`❌ Gagal ${wasMuted ? 'Unmute' : 'Mute'}:`, error);
+        console.error('Error details:', error.response?.data);
     } finally {
         loading.value = false;
         currentAction.value = null;
@@ -185,22 +217,10 @@ async function handleDelete() {
     currentAction.value = 'delete';
     loading.value = true;
     try {
-        const deletedChatId = props.chat.id; // ID chat yang akan dihapus
-        
-        await chatStore.deleteChat(deletedChatId, 'me'); 
+        await chatStore.deleteChat(props.chat.id, 'me'); 
         
         close();
         emit('action-complete', 'Chat berhasil dihapus.');
-
-        // 👇 PERBAIKAN UTAMA: Navigasi setelah penghapusan
-        const currentRouteId = router.currentRoute.value.params.id;
-        
-        if (String(currentRouteId) === String(deletedChatId)) {
-            // Arahkan ke halaman default (misal: /chat)
-            // Ganti 'ChatDefault' dengan nama route halaman default Anda di Vue Router
-            router.push({ name: 'ChatDefault' }); 
-            // ATAU: router.push('/chat'); jika tidak menggunakan named route
-        }
 
     } catch (error) {
         console.error("Gagal Hapus Chat:", error);

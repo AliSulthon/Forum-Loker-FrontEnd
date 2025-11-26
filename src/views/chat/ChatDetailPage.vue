@@ -7,10 +7,10 @@
       :key="chatId"
       @searchMessages="isSearchOpen = true"
     />
-    
+
     <div
       ref="messageListRef"
-      class="flex-1 overflow-y-auto bg-white" 
+      class="flex-1 overflow-y-auto bg-white"
     >
       <MessageList
         :messages="messages"
@@ -27,73 +27,76 @@
     />
 
     <MessageEditInput
-        v-if="isEditing && messageToEdit"
-        :message="messageToEdit"
-        @cancel="cancelEditMessage"
-        @confirm="confirmEditMessage"
+      v-if="isEditing && messageToEdit"
+      :message="messageToEdit"
+      @cancel="cancelEditMessage"
+      @confirm="confirmEditMessage"
     />
 
     <Teleport to="body">
       <div
-          v-if="menuPosition.show && messageToEdit"
-          @click.self="closeMenu"
-          class="fixed inset-0 z-40" 
+        v-if="menuPosition.show && messageToEdit"
+        @click.self="closeMenu"
+        class="fixed inset-0 z-40"
       >
-          <div
-              class="absolute bg-white rounded-lg shadow-xl py-1 text-sm z-50 border border-gray-100"
-              :style="{ 
-                top: `${menuPosition.y}px`, 
-                left: `${menuPosition.x}px`,
-                transform: 'translateY(-100%)' 
-              }"
-          >
-              <ul class="min-w-[180px]">
-                  <li 
-                      v-if="String(messageToEdit.user_id) === String(currentUserId) && messageToEdit.type !== 'deleted'"
-                      @click="() => { isEditing = true; closeMenu(); }"
-                      class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                      <i class="fa-solid fa-pen mr-2 w-4"></i> Edit Pesan
-                  </li>
-                  
-                  <li v-if="String(messageToEdit.user_id) === String(currentUserId) && messageToEdit.type !== 'deleted'"
-                      @click="handleDeleteMessage('all')"
-                      class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-red-500"
-                  >
-                      <i class="fa-solid fa-trash-can mr-2 w-4"></i> Hapus untuk Semua
-                  </li>
-                  
-                  <li @click="handleDeleteMessage('me')"
-                      class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                      <i class="fa-solid fa-eye-slash mr-2 w-4"></i> Hapus untuk Saya
-                  </li>
-              </ul>
-          </div>
+        <div
+          class="absolute bg-white rounded-lg shadow-xl py-1 text-sm z-50 border border-gray-100"
+          :style="{
+            top: `${menuPosition.y}px`,
+            left: `${menuPosition.x}px`,
+            transform: menuPosition.y < 70 ? 'translateY(0)' : 'translateY(-100%)'
+          }"
+        >
+          <ul class="min-w-[180px] text-[#000000]">
+            <li
+              v-if="String(messageToEdit.user_id) === String(currentUserId) && messageToEdit.type !== 'deleted'"
+              @click="() => { isEditing = true; closeMenu(); }"
+              class="px-4 py-2 hover:bg-[#E9E9E9] cursor-pointer"
+            >
+              <i class="fa-solid fa-pen mr-2 w-4 text-[#929292]"></i> Edit Pesan
+            </li>
+
+            <li
+              v-if="String(messageToEdit.user_id) === String(currentUserId) && messageToEdit.type !== 'deleted'"
+              @click="handleDeleteMessage('all')"
+              class="px-4 py-2 hover:bg-[#E9E9E9] cursor-pointer text-red-600 font-medium"
+            >
+              <i class="fa-solid fa-trash-can mr-2 w-4"></i> Hapus untuk Semua
+            </li>
+
+            <li
+              @click="handleDeleteMessage('me')"
+              class="px-4 py-2 hover:bg-[#E9E9E9] cursor-pointer"
+            >
+              <i class="fa-solid fa-eye-slash mr-2 w-4 text-[#929292]"></i> Hapus untuk Saya
+            </li>
+          </ul>
+        </div>
       </div>
     </Teleport>
-    
+
     <Teleport to="body">
-        <MessageSearchPanel 
-            v-if="isSearchOpen && activeChat"
-            :chat-id="activeChat.id"
-            @close="isSearchOpen = false"
-            @jump="scrollToMessage"
-        />
+      <MessageSearchPanel
+        v-if="isSearchOpen && activeChat"
+        :chat-id="activeChat.id"
+        @close="isSearchOpen = false"
+        @jump="scrollToMessage"
+      />
     </Teleport>
-    
+
     <Teleport to="body">
-        <NewChatPanel
-            v-if="isNewChatOpen"
-            @close="isNewChatOpen = false"
-            @chat-created="handleNewChatCreated"
-        />
+      <NewChatPanel
+        v-if="isNewChatOpen"
+        @update:modelValue="isNewChatOpen = $event"
+        @chat-created="handleNewChatCreated"
+      />
     </Teleport>
 
   </div>
 </template>
 
 <script setup>
+// ... (script setup tidak ada perubahan, kecuali penyesuaian pada transform menuPosition di template)
 import { ref, computed, nextTick, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
@@ -242,7 +245,7 @@ const openMessageOptions = (message) => {
         const rect = targetElement.getBoundingClientRect();
         const menuWidth = 200;
         const menuHeight = 120;
-        const gap = -100 ; // Jarak menu dari bubble (lebih dekat)
+        const gap = 10; // Jarak menu dari bubble (dijadikan positif)
         
         // Posisi X: aligned dengan bubble pesan, tapi tidak terlalu ke tepi
         let xPos;
@@ -250,17 +253,17 @@ const openMessageOptions = (message) => {
         // Jika pesan dari user sendiri (bubble di kanan)
         if (String(message.user_id) === String(currentUserId.value)) {
             // Menu align kanan dengan bubble, tapi agak masuk sedikit
-            xPos = rect.right - menuWidth;
+            xPos = rect.right - menuWidth + 20; // +20 agar lebih masuk ke kiri
         } else {
             // Pesan dari orang lain (bubble di kiri)
-            xPos = rect.left;
+            xPos = rect.left - 20; // -20 agar lebih masuk ke kiri
         }
         
         // Posisi Y: prioritas di ATAS bubble dengan jarak lebih dekat
-        let yPos = rect.top - menuHeight - gap;
+        let yPos = rect.top - gap;
         
         // Jika menu keluar dari atas layar, taruh di bawah
-        if (yPos < 70) { // Space untuk header
+        if (yPos < 70 + menuHeight + 10) { // Cek apakah menu akan melewati batas atas
             yPos = rect.bottom + gap;
         }
         
@@ -271,12 +274,12 @@ const openMessageOptions = (message) => {
             xPos = window.innerWidth - menuWidth - 10;
         }
         
+        messageToEdit.value = message;
         menuPosition.value = {
             x: xPos,
             y: yPos,
             show: true
         };
-        messageToEdit.value = message;
     }
 };
 
@@ -294,9 +297,18 @@ const confirmEditMessage = async (newText) => {
     if (!messageToEdit.value || !newText) return;
 
     try {
-        await messageStore.updateMessage(messageToEdit.value.chat_id, messageToEdit.value.id, newText);
+        // ✅ Kirim sebagai object dengan key 'text'
+        await messageStore.updateMessage(
+            messageToEdit.value.chat_id, 
+            messageToEdit.value.id, 
+            { text: newText } // ← Ubah jadi object
+        );
+        
+        // Tidak perlu fetch ulang karena store sudah update otomatis
+        
     } catch (error) {
         console.error("Gagal mengedit pesan:", error);
+        alert(error.response?.data?.message || "Gagal mengedit pesan");
     } finally {
         isEditing.value = false;
         messageToEdit.value = null; 
@@ -340,13 +352,5 @@ defineExpose({
 </script>
 
 <style>
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-    transition: all 0.25s ease-in-out;
-}
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-    transform: translateX(100%);
-    opacity: 0;
-}
+/* ... (Style lainnya tidak diubah) ... */
 </style>

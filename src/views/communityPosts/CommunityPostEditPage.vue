@@ -47,7 +47,7 @@ const route = useRoute()
 const postStore = useCommunityPostStore()
 
 const isLoading = ref(false)
-const communityId = computed(() => Number(route.params.id))
+const communityId = computed(() => Number(route.params.communityId))
 const postId = computed(() => Number(route.params.postId))
 const post = ref(null)
 

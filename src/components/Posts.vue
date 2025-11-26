@@ -75,21 +75,12 @@
       >
         <div class="p-6 relative">
             
-            <div class="absolute top-6 right-6 z-10" ref="postMenuRef">
-              <button @click="togglePostMenu(post.id)" class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition">
+            <div class="absolute top-6 right-6 z-10">
+              <button class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM17.25 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
                 </svg>
               </button>
-              <!-- Dropdown Menu -->
-              <div v-if="openPostMenuId === post.id" class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
-                <button @click="handleBookmarkPost(post)" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
-                  </svg>
-                  Bookmark
-                </button>
-              </div>
             </div>
 
             <div class="flex-1"> 
@@ -111,9 +102,11 @@
                   <span class="text-sm font-medium text-[#929292]">{{ formatDate(post.created_at) }}</span>
                 </div>
                 
+                <RouterLink :to="{ name: 'post-detail', params: { id: post.id } }">
                 <h3 class="text-xl md:text-2xl font-bold font-namaApp text-black mb-3 cursor-pointer hover:text-primary transition-colors">
                   {{ post.title }}
                 </h3>
+                </RouterLink>
 
                 <p class="text-gray-600 leading-relaxed whitespace-pre-line mb-6">
                   {{ post.content }}
@@ -205,7 +198,7 @@
                   <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-gray-200 shadow-sm inline-block min-w-[200px]">
                     <div v-if="editingCommentId !== comment.id">
                        <div class="flex justify-between items-center mb-1">
-                          <span class="font-bold text-xs text-gray-800">{{ comment.user?.name || 'Anonymous' }}</span>
+                          <span class="font-bold text-xs text-gray-800">{{ comment.user?.username || 'Anonymous' }}</span>
                           <span class="text-[10px] text-gray-400">{{ formatDate(comment.created_at) }}</span>
                        </div>
                        <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ comment.content }}</p> 
@@ -232,40 +225,18 @@
 
       </div>
     </div>
-
-    <!-- Bookmark Modal -->
-    <BookmarkModal
-      :show="showBookmarkModal"
-      :item-type="bookmarkItem.type"
-      :item-id="bookmarkItem.id"
-      :item-title="bookmarkItem.title"
-      @close="showBookmarkModal = false"
-      @saved="handleBookmarkSaved"
-    />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, reactive, computed, onBeforeUnmount } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted, reactive } from 'vue';
 import api from '../services/api';
-import { useAuthStore } from '@/stores/auth';
-
-const router = useRouter();
-const authStore = useAuthStore(); 
-import { useBookmarksStore } from '../stores/bookmarks';
-import BookmarkModal from './BookmarkModal.vue';
-
-const bookmarksStore = useBookmarksStore();
 
 const posts = ref([]);
 const loading = ref(true);
 const error = ref(null);
+const currentUser = ref(null);
 const isSubmitting = ref(false);
-
-
-//computed dari store
-const currentUser = computed(() => authStore.user);
 
 const newPost = reactive({ title: '', content: '' });
 const editingPostId = ref(null);
@@ -277,15 +248,14 @@ const loadingComments = ref({});
 const newCommentTexts = ref({});
 const editingCommentId = ref(null);
 const editCommentText = ref('');
-const openPostMenuId = ref(null);
-const postMenuRef = ref(null);
-const showBookmarkModal = ref(false);
-const bookmarkItem = ref({ type: '', id: null, title: '' });
 
 // --- HELPERS ---
+const checkCurrentUser = () => {
+  const userStr = localStorage.getItem('user');
+  if (userStr) currentUser.value = JSON.parse(userStr);
+};
 const isOwner = (post) => currentUser.value && post.user_id === currentUser.value.id;
 const isOwnerOfComment = (comment) => currentUser.value && comment.user_id === currentUser.value.id;
-
 const formatDate = (dateString) => {
   if (!dateString) return '';
   return new Date(dateString).toLocaleDateString('id-ID', {
@@ -298,23 +268,12 @@ const fetchPosts = async () => {
   try {
     const response = await api.get('/posts'); 
     posts.value = response.data.data ? response.data.data : response.data;
-  } catch (err) { 
-    console.error(err); 
-    error.value = 'Gagal memuat data.'; 
-  } 
-  finally { 
-    loading.value = false; 
-  }
+  } catch (err) { console.error(err); error.value = 'Gagal memuat data.'; } 
+  finally { loading.value = false; }
 };
 
 const handleCreatePost = async () => {
-  //Cek auth dari store
-  if (!authStore.isAuthenticated || !currentUser.value) {
-    alert("Silakan login terlebih dahulu!");
-    router.push('/login');
-    return;
-  }
-  
+  if (!currentUser.value) return alert("Silakan login!");
   isSubmitting.value = true;
   try {
     const response = await api.post('/posts', {
@@ -329,20 +288,13 @@ const handleCreatePost = async () => {
     alert("Postingan berhasil dibuat!");
   } catch (err) {
     console.error(err);
-    
-    // Handle unauthorized
-    if (err.response?.status === 401) {
-      alert("Sesi Anda telah berakhir. Silakan login kembali.");
-      authStore.logout();
-      router.push('/login');
-    } else {
-      alert("Gagal posting: " + (err.response?.data?.message || err.message));
-    }
+    alert("Gagal posting.");
   } finally {
     isSubmitting.value = false;
   }
 };
 
+// --- FUNGSI YANG HILANG SEBELUMNYA (Ini yang bikin error!) ---
 const startEditing = (post) => {
   editingPostId.value = post.id;
   editForm.title = post.title;
@@ -355,28 +307,15 @@ const cancelEdit = () => {
 
 const handleUpdatePost = async (id) => {
   try {
-    await api.put(`/posts/${id}`, { 
-      title: editForm.title, 
-      content: editForm.content 
-    });
+    await api.put(`/posts/${id}`, { title: editForm.title, content: editForm.content });
     const index = posts.value.findIndex(p => p.id === id);
     if (index !== -1) {
-      posts.value[index].title = editForm.title;
-      posts.value[index].content = editForm.content;
+        posts.value[index].title = editForm.title;
+        posts.value[index].content = editForm.content;
     }
     editingPostId.value = null;
     alert("Postingan berhasil diperbarui!");
-  } catch (err) { 
-    console.error(err);
-    
-    //Handle unauthorized
-    if (err.response?.status === 401) {
-      authStore.logout();
-      router.push('/login');
-    } else {
-      alert("Gagal update.");
-    }
-  }
+  } catch (err) { alert("Gagal update."); }
 };
 
 const handleDeletePost = async (id) => {
@@ -385,27 +324,13 @@ const handleDeletePost = async (id) => {
     await api.delete(`/posts/${id}`);
     posts.value = posts.value.filter(p => p.id !== id);
     alert("Postingan dihapus.");
-  } catch (err) { 
-    console.error(err);
-    
-    //Handle unauthorized
-    if (err.response?.status === 401) {
-      authStore.logout();
-      router.push('/login');
-    } else {
-      alert("Gagal hapus.");
-    }
-  }
+  } catch (err) { alert("Gagal hapus."); }
 };
 
 // --- COMMENT LOGIC ---
 const toggleComments = async (postId) => {
-  if (expandedPostId.value === postId) {
-    expandedPostId.value = null;
-  } else { 
-    expandedPostId.value = postId; 
-    await fetchComments(postId); 
-  }
+  if (expandedPostId.value === postId) expandedPostId.value = null;
+  else { expandedPostId.value = postId; await fetchComments(postId); }
 };
 
 const fetchComments = async (postId) => {
@@ -413,144 +338,60 @@ const fetchComments = async (postId) => {
   try {
     const response = await api.get(`/posts/${postId}/comments`);
     postComments.value[postId] = response.data.data;
-  } catch (err) { 
-    console.error(err); 
-  } 
-  finally { 
-    loadingComments.value[postId] = false; 
-  }
+  } catch (err) { console.error(err); } 
+  finally { loadingComments.value[postId] = false; }
 };
 
 const handleCreateComment = async (postId) => {
-  const text = newCommentTexts.value[postId];
-  if (!text || !text.trim()) return;
-  
-  if (!authStore.isAuthenticated) {
-    alert("Silakan login untuk berkomentar!");
-    router.push('/login');
-    return;
-  }
-  
-  try {
-    const response = await api.post(`/posts/${postId}/comments`, { 
-      content: text 
-    });
-    
-    if (!postComments.value[postId]) postComments.value[postId] = [];
-    postComments.value[postId].unshift(response.data.data);
-    
-    const postIndex = posts.value.findIndex(p => p.id === postId);
-    if (postIndex !== -1) posts.value[postIndex].comments_count++;
+   const text = newCommentTexts.value[postId];
+   if (!text || !text.trim()) return;
+   try {
+     // FIX: Pakai 'content' sesuai request backend
+     const response = await api.post(`/posts/${postId}/comments`, { content: text });
+     
+     if (!postComments.value[postId]) postComments.value[postId] = [];
+     postComments.value[postId].unshift(response.data.data);
+     
+     const postIndex = posts.value.findIndex(p => p.id === postId);
+     if (postIndex !== -1) posts.value[postIndex].comments_count++;
 
-    newCommentTexts.value[postId] = '';
-  } catch (err) { 
-    console.error(err);
-    
-    if (err.response?.status === 401) {
-      alert("Sesi Anda telah berakhir. Silakan login kembali.");
-      authStore.logout();
-      router.push('/login');
-    } else {
-      alert("Gagal kirim komentar: " + (err.response?.data?.message || err.message));
-    }
-  }
+     newCommentTexts.value[postId] = '';
+   } catch (err) { 
+     console.error(err);
+     alert("Gagal kirim komentar: " + (err.response?.data?.message || err.message)); 
+   }
 };
 
 const startEditingComment = (comment) => {
-  editingCommentId.value = comment.id;
-  editCommentText.value = comment.content; 
+   editingCommentId.value = comment.id;
+   editCommentText.value = comment.content; 
 };
 
 const handleUpdateComment = async (commentId, postId) => {
-  try {
-    await api.put(`/comments/${commentId}`, { 
-      content: editCommentText.value 
-    });
-    
-    const comments = postComments.value[postId];
-    const index = comments.findIndex(c => c.id === commentId);
-    if (index !== -1) comments[index].content = editCommentText.value;
-    
-    editingCommentId.value = null;
-  } catch (err) { 
-    console.error(err);
-    
-    if (err.response?.status === 401) {
-      authStore.logout();
-      router.push('/login');
-    } else {
-      alert("Gagal update komentar");
-    }
-  }
+   try {
+      await api.put(`/comments/${commentId}`, { content: editCommentText.value });
+      
+      const comments = postComments.value[postId];
+      const index = comments.findIndex(c => c.id === commentId);
+      if (index !== -1) comments[index].content = editCommentText.value;
+      
+      editingCommentId.value = null;
+   } catch (err) { alert("Gagal update komentar"); }
 };
 
 const handleDeleteComment = async (commentId, postId) => {
-  if (!confirm("Hapus komentar?")) return;
-  try {
-    await api.delete(`/comments/${commentId}`);
-    postComments.value[postId] = postComments.value[postId].filter(c => c.id !== commentId);
-    const postIndex = posts.value.findIndex(p => p.id === postId);
-    if (postIndex !== -1 && posts.value[postIndex].comments_count > 0) {
-      posts.value[postIndex].comments_count--;
-    }
-  } catch (err) { 
-    console.error(err);
-    
-  
-    if (err.response?.status === 401) {
-      authStore.logout();
-      router.push('/login');
-    } else {
-      alert("Gagal hapus komentar");
-    }
-  }
+   if(!confirm("Hapus komentar?")) return;
+   try {
+      await api.delete(`/comments/${commentId}`);
+      postComments.value[postId] = postComments.value[postId].filter(c => c.id !== commentId);
+      const postIndex = posts.value.findIndex(p => p.id === postId);
+      if (postIndex !== -1 && posts.value[postIndex].comments_count > 0) posts.value[postIndex].comments_count--;
+   } catch (err) { alert("Gagal hapus komentar"); }
 };
 
-// --- BOOKMARK LOGIC ---
-const togglePostMenu = (postId) => {
-  openPostMenuId.value = openPostMenuId.value === postId ? null : postId;
-};
-
-const handleBookmarkPost = (post) => {
-  bookmarkItem.value = {
-    type: 'post',
-    id: post.id,
-    title: post.title
-  };
-  showBookmarkModal.value = true;
-  openPostMenuId.value = null;
-};
-
-const handleBookmarkSaved = (message) => {
-  showBookmarkModal.value = false;
-  alert(message);
-};
-
-// Click outside to close menu
-const handleClickOutside = (event) => {
-  if (postMenuRef.value && !postMenuRef.value.contains(event.target)) {
-    openPostMenuId.value = null;
-  }
-};
 onMounted(() => {
-  console.log('=== DEBUG INFO (Posts.vue) ===');
-  console.log('Auth Store Token:', authStore.token);
-  console.log('Auth Store User:', authStore.user?.name);
-  console.log('Is Authenticated:', authStore.isAuthenticated);
-  console.log('localStorage auth_token:', localStorage.getItem('auth_token'));
-  console.log('localStorage user_info:', localStorage.getItem('user_info'));
-  console.log('sessionStorage auth_token:', sessionStorage.getItem('auth_token'));
-  console.log('sessionStorage user_info:', sessionStorage.getItem('user_info'));
-  console.log('================================');
-  
-  authStore.loadFromStorage();
-  
+  checkCurrentUser();
   fetchPosts();
-  document.addEventListener('click', handleClickOutside);
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener('click', handleClickOutside);
 });
 </script>
 

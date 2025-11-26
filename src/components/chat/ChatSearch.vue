@@ -35,10 +35,8 @@ const emit = defineEmits(['search'])
 let searchTimeout = null
 
 const performSearch = () => {
-  // Mengirim string kosong ('') jika query null/undefined, atau string yang sudah di-trim
   const searchValue = query.value ? query.value.trim() : ''
   
-  // Emit ke Parent. Parent yang bertugas filter by 'NAME' saja.
   emit('search', searchValue)
 }
 

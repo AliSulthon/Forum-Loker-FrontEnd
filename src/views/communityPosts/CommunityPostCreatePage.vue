@@ -5,7 +5,7 @@
       class="flex items-center gap-2 text-primary font-medium mb-8 
              hover:text-primary-dark transition-all duration-200 
              transform hover:-translate-x-1"
-      @click="router.push('/communities/' + route.params.id)"
+      @click="router.push('/communities/' + route.params.communityId)"
     >
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
         <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
@@ -36,7 +36,7 @@ const postStore = useCommunityPostStore()
 const isLoading = ref(false)
 
 async function handleSubmit(data) {
-  const communityId = Number(route.params.id)
+  const communityId = Number(route.params.communityId)
   if (!communityId) { alert("Community ID tidak ditemukan!"); return }
 
   try {

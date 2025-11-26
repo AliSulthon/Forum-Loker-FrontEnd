@@ -14,13 +14,13 @@
       @click.stop
     >
       <div class="h-16 flex items-center px-4 border-b border-gray-200 shrink-0">
-        <h2 class="text-lg font-semibold text-gray-900">
+        <h2 class="text-lg font-semibold text-[#000000]"> 
           Cari Pesan
         </h2>
         
         <button
           @click="$emit('close')"
-          class="ml-auto p-2 rounded-full hover:bg-gray-100 transition text-gray-500 hover:text-[#14BEF0]"
+          class="ml-auto p-2 rounded-full hover:bg-[#E9E9E9] transition text-[#929292] hover:text-[#14BEF0]"
           aria-label="Tutup Pencarian"
         >
           <svg 
@@ -46,7 +46,7 @@
           type="text"
           placeholder="Masukkan kata kunci..."
           aria-label="Kolom Pencarian Pesan"
-          class="w-full px-4 py-2 rounded-xl bg-gray-100 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#14BEF0] border border-transparent focus:bg-white transition-all"
+          class="w-full px-4 py-2 rounded-xl bg-gray-100 text-[#000000] placeholder-[#929292] focus:outline-none focus:ring-2 focus:ring-[#14BEF0] border border-transparent focus:bg-white transition-all"
         />
       </div>
 
@@ -61,7 +61,7 @@
 
         <div
           v-else-if="results && results.length === 0 && (query || '').trim().length > 0"
-          class="text-gray-500 text-center mt-6 px-4 text-sm"
+          class="text-[#929292] text-center mt-6 px-4 text-sm"
         >
           Tidak ada pesan yang ditemukan untuk "{{ query }}".
         </div>
@@ -70,22 +70,22 @@
           <li
             v-for="msg in results"
             :key="msg.id"
-            class="px-4 py-3 hover:bg-gray-50 cursor-pointer transition group"
+            class="px-4 py-3 hover:bg-[#E9E9E9] cursor-pointer transition group"
             @click="jumpTo(msg.id)"
           >
             <div class="flex flex-col">
-              <p class="text-gray-900 text-sm group-hover:text-[#14BEF0] transition-colors line-clamp-2 font-medium">
+              <p class="text-[#000000] text-sm group-hover:text-[#14BEF0] transition-colors line-clamp-2 font-medium">
                 {{ msg.text }}
               </p>
-              <p class="text-gray-400 text-xs mt-1">
+              <p class="text-[#929292] text-xs mt-1"> 
                 {{ formatDate(msg.created_at) }}
               </p>
             </div>
           </li>
         </ul>
 
-        <div v-else class="text-gray-400 text-center mt-10 p-4 text-sm flex flex-col items-center">
-            <i class="fa-solid fa-magnifying-glass text-2xl mb-2 opacity-30"></i>
+        <div v-else class="text-[#929292] text-center mt-10 p-4 text-sm flex flex-col items-center">
+            <i class="fa-solid fa-magnifying-glass text-2xl mb-2 opacity-30 text-[#929292]"></i>
             Masukkan kata kunci untuk mencari.
         </div>
       </div>
@@ -94,6 +94,7 @@
 </template>
 
 <script setup>
+// ... (script setup tidak ada perubahan)
 import { ref } from "vue";
 import { useMessageStore } from "@/stores/chat/useMessageStore";
 
@@ -175,7 +176,8 @@ const searchNow = () => {
   width: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #d1d5db;
+  /* Menggunakan warna netral/outline (misalnya Biru Muda 1) */
+  background-color: #97DFF4; 
   border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {

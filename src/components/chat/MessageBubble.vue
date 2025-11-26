@@ -1,6 +1,5 @@
 <template>
   <div class="w-full grid grid-cols-[40px_1fr_40px_40px] gap-2 mb-2 group">
-    <!-- Grid 1: Avatar Lawan -->
     <div class="flex items-start justify-center pt-0.5">
       <div 
         v-if="!isMe && showAvatar" 
@@ -10,14 +9,14 @@
       </div>
     </div>
 
-    <!-- Grid 2: Bubble Chat -->
     <div class="flex items-start" :class="isMe ? 'justify-end' : 'justify-start'">
       <div
         class="max-w-full px-3 py-2 rounded-2xl text-sm shadow-sm relative"
         :class="[
           isMe
             ? 'rounded-br-sm' 
-            : 'border border-gray-100 rounded-bl-sm',
+            // PERUBAHAN OPSI 1: Border Pesan Lawan
+            : 'border border-[#E9E9E9] rounded-bl-sm', 
           message?.type === 'deleted'
             ? 'bg-gray-50 border border-gray-200 text-[#929292]'
             : isMe
@@ -55,12 +54,11 @@
       </div>
     </div>
 
-    <!-- Grid 3: Button Edit -->
     <div class="flex items-start justify-center pt-0.5">
       <button
         v-if="isMe && message?.type !== 'deleted'" 
         @click="$emit('openOptions', message)"
-        class="w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        class="w-6 h-6 rounded-full bg-[#E9E9E9] hover:bg-gray-200 text-[#929292] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
         title="Opsi Pesan"
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
@@ -70,12 +68,12 @@
       </button>
     </div>
 
-    <!-- Grid 4: Spacer Kosong -->
     <div></div>
   </div>
 </template>
 
 <script setup>
+// ... (script setup tidak ada perubahan)
 import { computed } from 'vue' 
 
 const emit = defineEmits(['openOptions']);
@@ -127,6 +125,7 @@ const formatTime = (timestamp) => {
     if (isNaN(date)) return 'Waktu Tidak Valid'
     const formatter = new Intl.DateTimeFormat('id-ID', {
       hour: '2-digit',
+      minute: '2-digit',
       minute: '2-digit',
       hour12: false, 
       timeZone: 'Asia/Jakarta' 

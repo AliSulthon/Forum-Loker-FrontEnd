@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gray-50 font-sans relative pb-20">
 
     <div class="fixed inset-0 z-0 opacity-40 pointer-events-none" 
-         style="background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 24px 24px;">
+      style="background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 24px 24px;">
     </div>
 
     <div class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -46,9 +46,9 @@
                     {{ sharing.user?.fullname }}
                   </h3>
                   <div class="flex items-center gap-2 text-sm text-detail">
-                     <span>@{{ sharing.user?.username || 'user' }}</span>
-                     <span>•</span>
-                     <span>{{ formatDate(sharing.created_at) }}</span>
+                    <span>@{{ sharing.user?.username || 'user' }}</span>
+                    <span>•</span>
+                    <span>{{ formatDate(sharing.created_at) }}</span>
                   </div>
                 </div>
               </div>
@@ -68,14 +68,16 @@
               <div class="flex gap-4">
                 <button 
                   @click="toggleLike"
+                  :disabled="isLikeProcessing"
                   :class="[
-                    'flex items-center gap-2 font-bold text-sm transition-all duration-300 transform active:scale-90',
-                    isLiked ? 'text-red-500' : 'text-detail hover:text-red-400'
+                    'flex items-center gap-2 font-bold text-sm transition-all duration-300 transform',
+                    isLiked ? 'text-red-500 active:scale-95' : 'text-detail hover:text-red-400 active:scale-95',
+                    { 'opacity-70 cursor-not-allowed': isLikeProcessing }
                   ]"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" 
-                       :fill="isLiked ? 'currentColor' : 'none'" 
-                       viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                    :fill="isLiked ? 'currentColor' : 'none'" 
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                   </svg>
                   
@@ -96,11 +98,11 @@
           <div class="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100">
              <h4 class="text-xs font-bold text-detail uppercase tracking-widest mb-4">Tentang Penulis</h4>
              <div class="flex flex-col items-center text-center">
-                <div class="w-20 h-20 rounded-full bg-gray-100 mb-3 flex items-center justify-center text-3xl font-namaApp text-gray-400">
-                   {{ getInitials(sharing.user?.fullname) }}
-                </div>
-                <h3 class="font-bold text-headline text-lg">{{ sharing.user?.fullname }}</h3>
-                <p class="text-sm text-detail mt-1 mb-4">Member of Sevanta Community</p>
+               <div class="w-20 h-20 rounded-full bg-gray-100 mb-3 flex items-center justify-center text-3xl font-namaApp text-gray-400">
+                  {{ getInitials(sharing.user?.fullname) }}
+               </div>
+               <h3 class="font-bold text-headline text-lg">{{ sharing.user?.fullname }}</h3>
+               <p class="text-sm text-detail mt-1 mb-4">Member of Sevanta Community</p>
              </div>
           </div>
         </div>
@@ -150,7 +152,7 @@ async function fetchDetail() {
     
     sharing.value = response.data.data
     
-    
+    // Pastikan data like diambil dari response detail
     likeCount.value = response.data.data.likes_count || 0
     isLiked.value = response.data.data.is_liked || false
     
@@ -231,6 +233,7 @@ async function toggleLike() {
     const id = route.params.id
 
     try {
+      // Pastikan response dideklarasikan menggunakan let/const di scope try
       const response = await api.post(
         `/sharing/${id}/like`,
         {},
@@ -239,21 +242,21 @@ async function toggleLike() {
   
       // ✅ SYNC state dari backend response
       if (response.data && !response.data.error) {
-        // ✅ PENTING: Update dari backend response
+        // ✅ PENTING: Update dari backend response yang sudah menggunakan toggle()
         isLiked.value = response.data.is_liked
         likeCount.value = response.data.likes_count
         
-        console.log('=== LIKE RESPONSE DEBUG ===')
+        console.log('=== LIKE RESPONSE DEBUG (SUCCESS) ===')
         console.log('Backend Response:', response.data)
         console.log('New is_liked:', isLiked.value)
         console.log('New likes_count:', likeCount.value)
-        console.log('===========================')
+        console.log('=====================================')
       }
 
     } catch (error) {
       console.error("❌ Gagal like:", error)
       
-      // Rollback ke state semula
+      // Rollback ke state semula jika API gagal
       isLiked.value = previousState
       likeCount.value = previousCount
       
@@ -266,6 +269,7 @@ async function toggleLike() {
       } else if (error.response?.status === 404) {
         alert("Postingan tidak ditemukan.")
       } else {
+        // Menggunakan error.response?.data?.message untuk menangani error dari backend
         alert(error.response?.data?.message || "Terjadi kesalahan. Silakan coba lagi.")
       }
     } finally {
@@ -294,6 +298,7 @@ async function copyLink() {
     alert("Link tersalin!")
   } catch (err) {
     console.error('Copy failed:', err)
+    // Fallback manual copy
     const textarea = document.createElement('textarea')
     textarea.value = window.location.href
     document.body.appendChild(textarea)
@@ -314,5 +319,3 @@ onMounted(() => {
   fetchDetail()
 })
 </script>
-
-<!-- Template tetap sama, tidak perlu diubah -->

@@ -7,6 +7,7 @@ export const messageService = {
   },
 
   updateMessage(chatId, messageId, payload) {
+    // ✅ PATCH sesuai Laravel resource route
     return api.patch(`/chats/${chatId}/messages/${messageId}`, payload);
   },
 

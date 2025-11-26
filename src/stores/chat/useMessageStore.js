@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import axios from "@/services/api"; // Instance Axios
+import axios from "@/services/api";
 import { useAuthStore } from '@/stores/auth.js'; 
 
 export const useMessageStore = defineStore("messages", {
@@ -102,18 +102,22 @@ export const useMessageStore = defineStore("messages", {
         async updateMessage(chatId, messageId, payload) {
             this.error = null;
             try {
-                const res = await axios.patch(
-                    `/chats/${chatId}/messages/${messageId}`,
-                    payload
-                );
+                // ✅ Menggunakan axios langsung (konsisten dengan action lain)
+                const res = await axios.patch(`/chats/${chatId}/messages/${messageId}`, payload);
+                
                 const updated = res.data.data;
+                
+                // Update message di state lokal
                 this.messages = this.messages.map((m) =>
                     m.id === messageId ? updated : m
                 );
+                
+                return updated;
             } catch (err) {
                 this.error = err;
                 console.error("updateMessage error:", err);
                 this.handleAuthError(err);
+                throw err;
             }
         },
 
@@ -138,7 +142,7 @@ export const useMessageStore = defineStore("messages", {
                             return { 
                                 ...m, 
                                 type: 'deleted', 
-                                text: null, // Kosongkan text
+                                text: null,
                             };
                         }
                         return m;

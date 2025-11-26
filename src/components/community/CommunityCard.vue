@@ -28,7 +28,7 @@
     <span
       class="absolute bottom-4 right-4 text-primary font-medium hover:underline cursor-pointer text-sm"
     >
-      Lihat Detail →
+      See details →
     </span>
   </div>
 </template>

@@ -1,73 +1,75 @@
 <template>
-  <div class="max-w-6xl mx-auto py-10 px-4">
+  <div class="min-h-screen max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8"> 
 
-    <!-- Search & Create -->
-    <div class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4">
-      <!-- Search input -->
-      <div class="relative w-full sm:max-w-lg flex-1">
-        <input
-          :value="communityStore.searchQuery"
-          @input="handleSearch"
-          type="text"
-          placeholder="Search communities by name or description..."
-          class="w-full px-4 py-3 pl-10 rounded-xl border border-gray-300 focus:border-primary-light focus:ring-1 focus:ring-primary-light outline-none transition"
-        />
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          stroke-width="2" 
-          stroke="currentColor" 
-          class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.197 5.197a7.5 7.5 0 0 0 10.607 10.607Z" />
-        </svg>
+    <div class="flex flex-col md:flex-row justify-between items-end mb-8 gap-6">
+      <div>
+        <h1 class="font-namaApp text-4xl font-black text-primary tracking-tight mb-2">
+          <span class="text-black">Community</span> <span class="text-primary-light">Hub</span>
+        </h1>
+        <p class="text-secondary font-medium max-w-xl">
+          Find and join communities that interest you.
+        </p>
       </div>
 
-      <!-- Create button -->
-      <button
-        class="group flex items-center gap-2 px-5 py-2 bg-white text-gray-500 border-2 border-primary rounded-xl font-semibold
-               hover:bg-primary hover:text-white transition-transform transform hover:scale-105 
-               duration-200 cursor-pointer whitespace-nowrap"
+      <button 
         @click="goCreate"
+        class="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/30 hover:bg-primary/90 hover:-translate-y-1 transition-all duration-300 whitespace-nowrap"
       >
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          stroke-width="2" 
-          stroke="currentColor" 
-          class="w-5 h-5 text-primary group-hover:text-white transition"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-        </svg>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
         Create Community
       </button>
     </div>
 
-    <!-- Full-width Toggle Filter -->
-    <div class="flex w-full border border-primary rounded-xl overflow-hidden mb-6">
-      <button
-        :class="['flex-1 px-4 py-2 font-semibold transition text-center', ownerFilter === 'all' ? 'bg-primary text-white' : 'bg-white text-primary']"
-        @click="ownerFilter = 'all'"
-      >
-        Semua
-      </button>
-      <button
-        :class="['flex-1 px-4 py-2 font-semibold transition text-center', ownerFilter === 'mine' ? 'bg-primary text-white' : 'bg-white text-primary']"
-        @click="ownerFilter = 'mine'"
-      >
-        Milik Saya
-      </button>
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b border-gray-200 pb-1">
+
+      <div class="flex items-center gap-2">
+        <button 
+          @click="ownerFilter = 'all'"
+          :class="[
+            'px-6 py-2.5 rounded-t-lg font-bold text-sm transition-all border-b-2',
+            ownerFilter === 'all' 
+              ? 'border-primary text-primary bg-primary-light/10' 
+              : 'border-transparent text-gray-500 hover:text-primary hover:bg-gray-50'
+          ]"
+        >
+          All
+        </button>
+        <button 
+          @click="ownerFilter = 'mine'"
+          :class="[
+            'px-6 py-2.5 rounded-t-lg font-bold text-sm transition-all border-b-2',
+            ownerFilter === 'mine' 
+              ? 'border-primary text-primary bg-primary-light/10' 
+              : 'border-transparent text-gray-500 hover:text-primary hover:bg-gray-50'
+          ]"
+        >
+          My Communities
+        </button>
+      </div>
+
+      <div class="relative w-full md:w-64 mb-2 md:mb-0">
+        <input 
+          :value="communityStore.searchQuery"
+          @input="handleSearch"
+          type="text" 
+          placeholder="Search communities..." 
+          class="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-sm"
+        >
+        <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </div>
     </div>
 
-    <!-- Community list -->
-    <CommunityList :communities="filteredCommunities" @select="goDetail" /> 
+    <CommunityList 
+      v-if="communityStore.loaded && filteredCommunities.length > 0"
+      :communities="filteredCommunities" 
+      @select="goDetail" 
+    /> 
 
-    <!-- Empty state -->
-    <div v-if="communityStore.loaded && filteredCommunities.length === 0" class="text-center py-10 text-secondary">
+    <div v-else-if="communityStore.loaded && filteredCommunities.length === 0" class="text-center py-10 text-secondary bg-white/50 backdrop-blur-sm rounded-xl border border-gray-100">
       <p v-if="communityStore.searchQuery">No communities found matching "{{ communityStore.searchQuery }}".</p>
-      <p v-else>No communities available yet. Create the first one!</p>
+      <p v-else>No communities available yet. Be the first to create one!</p>
     </div>
 
   </div>
@@ -87,10 +89,10 @@ const ownerFilter = ref('all')
 
 // Computed filtered communities: search + owner filter
 const filteredCommunities = computed(() => {
-  let list = communityStore.filteredCommunities
+  let list = communityStore.filteredCommunities 
 
   if (ownerFilter.value === 'mine') {
-    list = list.filter(c => c.isOwner)
+    list = list.filter(c => c.isOwner) 
   }
 
   return list

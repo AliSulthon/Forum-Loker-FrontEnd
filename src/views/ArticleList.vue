@@ -207,10 +207,14 @@ const deleteArticle = async (id) => {
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import api from "../services/api";
 import { useRouter } from "vue-router";
+import { useBookmarksStore } from "../stores/bookmarks";
 import BookmarkModal from "../components/BookmarkModal.vue";
 
+const bookmarksStore = useBookmarksStore();
+  
 const router = useRouter();
 const articles = ref([]);
+const openMenu = ref(null);
 const showBookmarkModal = ref(false);
 const bookmarkItem = ref({ type: '', id: null, title: '' });
 
@@ -266,3 +270,4 @@ const openDetail = (id) => {
   router.push(`/articles/${id}`);
 };
 </script>
+

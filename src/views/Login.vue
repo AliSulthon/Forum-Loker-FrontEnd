@@ -20,7 +20,7 @@
         <div class="relative z-10">
           <img 
             src="@/assets/logo.png" 
-            alt="Logo Sevanta" 
+            alt="Sevanta Logo" 
             class="w-40 mb-8 drop-shadow-xl hover:scale-105 transition-transform duration-500"
             style="filter: brightness(0) invert(1);"
           >
@@ -32,7 +32,7 @@
           </h1>
           
           <p class="text-blue-50 text-sm leading-relaxed font-medium opacity-90 max-w-xs">
-            Platform komunitas profesional untuk berbagi wawasan, artikel, dan peluang karir.
+            A professional community platform for sharing insights, articles, and career opportunities.
           </p>
         </div>
       </div>
@@ -41,13 +41,13 @@
         
         <div class="text-center mb-8">
           <div class="flex justify-center md:hidden mb-6">
-            <img src="@/assets/logo.png" alt="Logo Sevanta" class="w-24 drop-shadow-md">
+            <img src="@/assets/logo.png" alt="Sevanta Logo" class="w-24 drop-shadow-md">
           </div>
 
           <h2 class="text-4xl font-bold text-headline font-namaApp tracking-tight">Sign In</h2>
           
           <p class="text-detail text-sm mt-2 font-medium">
-            Masuk untuk mengakses akun Anda
+            Enter your details to access your account
           </p>
         </div>
 
@@ -103,9 +103,9 @@
           <div class="flex items-center justify-between text-sm">
              <label class="flex items-center text-detail cursor-pointer hover:text-headline transition-colors group">
                 <input type="checkbox" v-model="rememberMe" class="w-4 h-4 rounded border-gray-300 text-blueHeadline focus:ring-blueHeadline accent-blueHeadline cursor-pointer">
-                <span class="ml-2 font-medium group-hover:text-headline transition-colors">Ingat Saya</span>
+                <span class="ml-2 font-medium group-hover:text-headline transition-colors">Remember Me</span>
              </label>
-             <a href="#" class="text-blueHeadline font-bold hover:text-bluePrimary hover:underline transition-colors">Lupa Password?</a>
+             <a href="#" class="text-blueHeadline font-bold hover:text-bluePrimary hover:underline transition-colors">Forgot Password?</a>
           </div>
 
           <button
@@ -120,16 +120,16 @@
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             
-            <span v-if="!isLoading">Masuk</span>
-            <span v-else>Memproses...</span>
+            <span v-if="!isLoading">Sign In</span>
+            <span v-else>Processing...</span>
           </button>
 
         </form>
 
         <p class="text-center text-detail text-sm mt-8 font-medium">
-          Belum punya akun?
+          Don't have an account?
           <router-link to="/register" class="text-blueHeadline font-bold hover:text-bluePrimary hover:underline ml-1 transition-colors">
-            Daftar Sekarang
+            Sign Up Now
           </router-link>
         </p>
 
@@ -170,24 +170,62 @@ async function handleLogin() {
         rememberMe.value
       )
       
+      // Delay for UX smoothing
       await new Promise(resolve => setTimeout(resolve, 50))
       
-      console.log('After login - Store token:', authStore.token)
-      console.log('After login - Store user:', authStore.user)
-      console.log('After login - isAuthenticated:', authStore.isAuthenticated)
-      
-      // Redirect
       const redirect = router.currentRoute.value.query.redirect || '/'
       await router.push(redirect)
       
     } else {
-      errorMessage.value = res.message || "Login gagal."
+      errorMessage.value = res.message || "Login failed. Please try again."
     }
   } catch (err) {
-    console.error('Login error:', err)
-    errorMessage.value = 
-      err.response?.data?.message || 
-      "Login gagal. Periksa email dan password."
+    console.error('Login error detailed:', err)
+
+    // --- LOGIC
+    if (err.response) {
+      const status = err.response.status
+      const msgFromBackend = err.response.data?.message
+
+      if (status === 401) {
+        // 401 Unauthorized (Wrong credentials)
+        if (msgFromBackend && msgFromBackend.toLowerCase().includes('password')) {
+           errorMessage.value = "The password you entered is incorrect."
+        } else if (msgFromBackend && msgFromBackend.toLowerCase().includes('user')) {
+           errorMessage.value = "No account found with this email address."
+        } else {
+           errorMessage.value = "Invalid email or password. Please try again."
+        }
+      
+      } else if (status === 404) {
+        // 404 Not Found
+        errorMessage.value = "Email address not found in our records."
+      
+      } else if (status === 422) {
+        // 422 Validation Error
+        const validationErrors = err.response.data?.errors
+        if (validationErrors) {
+            const firstKey = Object.keys(validationErrors)[0]
+            errorMessage.value = validationErrors[firstKey][0]
+        } else {
+            errorMessage.value = msgFromBackend || "Invalid input data provided."
+        }
+      
+      } else if (status >= 500) {
+        // 500 Server Error
+        errorMessage.value = "Server error. Please try again later."
+      
+      } else {
+        errorMessage.value = msgFromBackend || "An unexpected error occurred."
+      }
+
+    } else if (err.request) {
+      // Network Error
+      errorMessage.value = "Unable to connect to the server. Check your internet connection."
+    } else {
+      errorMessage.value = "An application error occurred."
+    }
+
   } finally {
     isLoading.value = false
   }

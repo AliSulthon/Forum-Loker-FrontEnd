@@ -158,10 +158,8 @@ export const useAuthStore = defineStore('auth', () => {
   async function deletePhoto() {
     try {
       const res = await deletePhotoService()
-      // For delete, we might need to manually update the user object or re-fetch
-      // Assuming we need to clear the photo in local state
       if (res.success) {
-        // Re-fetch profile to get updated state or manually clear
+    
         await fetchProfile()
       }
       return res

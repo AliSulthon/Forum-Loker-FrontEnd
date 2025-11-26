@@ -46,7 +46,7 @@
             class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 flex items-center gap-3 transition"
           >
             <i class="fa-solid fa-trash"></i>
-            <span>Hapus Chat (Hanya untuk Saya)</span>
+            <span>Hapus Chat</span>
             <i v-if="loading && currentAction === 'delete'" class="fa-solid fa-spinner fa-spin ml-auto text-red-600"></i>
           </button>
 

@@ -28,14 +28,21 @@
               {{ post.title }}
             </h1>
 
-            <div class="flex items-center gap-4">
-              <!-- <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-lg border border-gray-200">
-                {{ post.user?.name?.charAt(0).toUpperCase() || '?' }}
-              </div> -->
-              <div>
-                <p class="font-bold text-gray-900 text-lg">{{ post.user?.username || 'Anonymous' }}</p>
-                <p class="text-sm text-gray-500">Penulis</p>
+            <div class="flex items-center justify-between gap-4">
+              <div class="flex items-center gap-4">
+                <div>
+                  <p class="font-bold text-gray-900 text-lg">{{ post.user?.username || 'Anonymous' }}</p>
+                  <p class="text-sm text-gray-500">Penulis</p>
+                </div>
               </div>
+
+              <!-- Bookmark button -->
+              <button
+                @click="handleBookmarkPost"
+                class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 flex items-center gap-2 transition"
+              >
+                🔖 Bookmark
+              </button>
             </div>
           </div>
 
@@ -53,9 +60,6 @@
 
             <div class="space-y-4">
               <div v-for="comment in post.comments" :key="comment.id" class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex gap-4">
-                <!-- <div class="w-10 h-10 rounded-full bg-blue-50 flex-shrink-0 flex items-center justify-center text-primary font-bold text-sm">
-                  {{ comment.user?.name?.charAt(0).toUpperCase() || '?' }}
-                </div> -->
                 <div class="flex-1">
                   <div class="flex justify-between items-center mb-1">
                     <span class="font-bold text-gray-900">{{ comment.user?.username || 'User' }}</span>
@@ -73,6 +77,16 @@
 
         </div>
       </div>
+
+      <!-- Bookmark Modal -->
+      <BookmarkModal
+        :show="showBookmarkModal"
+        :item-type="bookmarkItem.type"
+        :item-id="bookmarkItem.id"
+        :item-title="bookmarkItem.title"
+        @close="showBookmarkModal = false"
+        @saved="handleBookmarkSaved"
+      />
     </div>
 </template>
 
@@ -80,19 +94,21 @@
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import api from '../services/api';
-import MainLayout from '../layouts/MainLayout.vue';
+import BookmarkModal from '../components/BookmarkModal.vue';
 
 const route = useRoute();
 const post = ref(null);
 const loading = ref(true);
 const error = ref(null);
 
+// Bookmark state
+const showBookmarkModal = ref(false);
+const bookmarkItem = ref({ type: '', id: null, title: '' });
+
 const fetchPostDetail = async () => {
   try {
-    const postId = route.params.id; // Mengambil ID dari URL
-    const response = await api.get(`/posts/${postId}`); // GET /posts/{post}
-    
-    // Sesuai response PostController: { message: "...", data: { ... } }
+    const postId = route.params.id;
+    const response = await api.get(`/posts/${postId}`);
     post.value = response.data.data; 
   } catch (err) {
     console.error(err);
@@ -109,6 +125,21 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('id-ID', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
   });
+};
+
+// Bookmark functions
+const handleBookmarkPost = () => {
+  bookmarkItem.value = {
+    type: 'post',
+    id: post.value.id,
+    title: post.value.title
+  };
+  showBookmarkModal.value = true;
+};
+
+const handleBookmarkSaved = (message) => {
+  showBookmarkModal.value = false;
+  alert(message);
 };
 
 onMounted(() => {

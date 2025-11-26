@@ -76,11 +76,43 @@
         <div class="p-6 relative">
             
             <div class="absolute top-6 right-6 z-10">
-              <button class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition">
+              <button 
+                @click.stop="toggleMenu(post)"
+                class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition"
+              >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM17.25 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
                 </svg>
               </button>
+
+              <!-- Dropdown Menu -->
+              <div
+                v-if="post.showMenu"
+                class="absolute right-0 mt-2 w-40 bg-white border shadow-lg rounded-xl overflow-hidden z-20"
+              >
+                <button
+                  class="block w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                  @click.stop="handleBookmarkPost(post)"
+                >
+                  🔖 Bookmark
+                </button>
+
+                <button
+                  v-if="isOwner(post)"
+                  class="block w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                  @click.stop="startEditing(post)"
+                >
+                  ✏️ Edit
+                </button>
+
+                <button
+                  v-if="isOwner(post)"
+                  class="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 flex items-center gap-2"
+                  @click.stop="handleDeletePost(post.id)"
+                >
+                  🗑️ Delete
+                </button>
+              </div>
             </div>
 
             <div class="flex-1"> 
@@ -144,21 +176,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                       </svg>
                     </button>
-                </div>
-
-                <div v-if="isOwner(post) && editingPostId !== post.id" class="flex gap-2">
-                  <button 
-                    @click="startEditing(post)" 
-                    class="bg-[#2AA8FF] text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-600 transition shadow-sm"
-                  >
-                    Edit
-                  </button>
-                  <button 
-                    @click="handleDeletePost(post.id)" 
-                    class="bg-[#2AA8FF] text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-600 transition shadow-sm"
-                  >
-                    Delete
-                  </button>
                 </div>
 
               </div>
@@ -225,13 +242,26 @@
 
       </div>
     </div>
+
+    <!-- Bookmark Modal -->
+    <BookmarkModal
+      :show="showBookmarkModal"
+      :item-type="bookmarkItem.type"
+      :item-id="bookmarkItem.id"
+      :item-title="bookmarkItem.title"
+      @close="showBookmarkModal = false"
+      @saved="handleBookmarkSaved"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, onBeforeUnmount, reactive } from 'vue';
 import api from '../services/api';
+import BookmarkModal from '../components/BookmarkModal.vue';
+import { useBookmarksStore } from '../stores/bookmarks';
 
+const bookmarksStore = useBookmarksStore();
 const posts = ref([]);
 const loading = ref(true);
 const error = ref(null);
@@ -249,13 +279,19 @@ const newCommentTexts = ref({});
 const editingCommentId = ref(null);
 const editCommentText = ref('');
 
+// Bookmark state
+const showBookmarkModal = ref(false);
+const bookmarkItem = ref({ type: '', id: null, title: '' });
+
 // --- HELPERS ---
 const checkCurrentUser = () => {
   const userStr = localStorage.getItem('user');
   if (userStr) currentUser.value = JSON.parse(userStr);
 };
+
 const isOwner = (post) => currentUser.value && post.user_id === currentUser.value.id;
 const isOwnerOfComment = (comment) => currentUser.value && comment.user_id === currentUser.value.id;
+
 const formatDate = (dateString) => {
   if (!dateString) return '';
   return new Date(dateString).toLocaleDateString('id-ID', {
@@ -263,11 +299,41 @@ const formatDate = (dateString) => {
   });
 };
 
+// Menu toggle
+const toggleMenu = (post) => {
+  posts.value.forEach(p => p.showMenu = false);
+  post.showMenu = !post.showMenu;
+};
+
+// Click outside to close menu
+const handleClickOutside = (e) => {
+  if (!e.target.closest('.relative')) {
+    posts.value.forEach(p => p.showMenu = false);
+  }
+};
+
+// Bookmark functions
+const handleBookmarkPost = (post) => {
+  bookmarkItem.value = {
+    type: 'post',
+    id: post.id,
+    title: post.title
+  };
+  showBookmarkModal.value = true;
+  post.showMenu = false;
+};
+
+const handleBookmarkSaved = (message) => {
+  showBookmarkModal.value = false;
+  alert(message);
+};
+
 // --- POST LOGIC ---
 const fetchPosts = async () => {
   try {
     const response = await api.get('/posts'); 
-    posts.value = response.data.data ? response.data.data : response.data;
+    const postsData = response.data.data ? response.data.data : response.data;
+    posts.value = postsData.map(p => ({ ...p, showMenu: false }));
   } catch (err) { console.error(err); error.value = 'Gagal memuat data.'; } 
   finally { loading.value = false; }
 };
@@ -392,6 +458,11 @@ const handleDeleteComment = async (commentId, postId) => {
 onMounted(() => {
   checkCurrentUser();
   fetchPosts();
+  window.addEventListener('click', handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('click', handleClickOutside);
 });
 </script>
 

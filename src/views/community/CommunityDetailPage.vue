@@ -1,5 +1,4 @@
 <template>
-
 <div class="max-w-5xl mx-auto py-10 px-4">
 
     <button
@@ -44,7 +43,7 @@
                         Edit
                     </button>
                     <button 
-                        @click="confirmDelete(); showMenu = false" 
+                        @click="showCommunityDeleteModal(); showMenu = false" 
                         class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                     >
                         Delete
@@ -80,7 +79,7 @@
       :currentUserId="authStore.user?.id"
       @select="goPostDetail"
       @edit="handleEditPost"
-      @delete="handleDeletePost"
+      @delete="showPostDeleteModal"
       class="mt-6"
     />
 
@@ -89,13 +88,44 @@
       <p>No posts yet. Be the first to create one!</p>
     </div>
 
-</div>
-
+    <div 
+      v-if="showDeleteModal" 
+      class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4" 
+      @click.self="closeModal"
+    >
+      <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 transform transition-all duration-300 scale-100 opacity-100">
+        
+        <h3 class="text-xl font-bold text-red-600 mb-4">
+          {{ deleteType === 'community' ? 'Confirm Community Deletion' : 'Confirm Post Deletion' }}
+        </h3>
+        
+        <p class="text-gray-700 mb-6">
+          Are you sure you want to delete <span class="font-semibold">{{ deleteType === 'community' ? deleteTarget?.name : deleteTarget?.title }}</span>? 
+          <span v-if="deleteType === 'community'" class="font-bold text-red-500">This action cannot be undone and all posts will be lost.</span>
+        </p>
+        
+        <div class="flex justify-end gap-3">
+          <button 
+            @click="closeModal"
+            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
+          >
+            Cancel
+          </button>
+          <button 
+            @click="executeDelete"
+            class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+    </div>
 </template>
 
 
 <script setup>
-import { computed, onMounted, ref } from 'vue' // Tambahkan 'ref'
+import { computed, onMounted, ref } from 'vue' 
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/auth.js'
 import { useCommunityStore } from '../../stores/communityStore.js'
@@ -109,87 +139,121 @@ const authStore = useAuthStore()
 const communityStore = useCommunityStore()
 const communityPostStore = useCommunityPostStore()
 
-// State untuk mengontrol visibilitas dropdown menu
 const showMenu = ref(false)
 
+const showDeleteModal = ref(false)
+const deleteTarget = ref(null)
+const deleteType = ref('')
+
+function closeModal() {
+    showDeleteModal.value = false
+    deleteTarget.value = null
+    deleteType.value = ''
+}
+
 onMounted(async () => {
-  if (!communityStore.communities.length) {
-    await communityStore.fetchCommunities()
-  }
-  await communityPostStore.fetchPosts(Number(route.params.id))
+    const communityId = Number(route.params.id);
+    if (isNaN(communityId) || communityId <= 0) {
+        alert("Invalid Community ID! Redirecting to communities.");
+        router.push('/communities');
+        return;
+    }
+
+    if (!communityStore.communities.length) {
+        await communityStore.fetchCommunities()
+    }
+    await communityPostStore.fetchPosts(communityId)
 })
 
 const community = computed(() =>
-  communityStore.communities.find(c => c.id === Number(route.params.id))
+    communityStore.communities.find(c => c.id === Number(route.params.id))
 )
 
 const posts = computed(() => 
-  communityPostStore.getByCommunity(Number(route.params.id))
+    communityPostStore.getByCommunity(Number(route.params.id))
 )
 
 const isOwner = computed(() => {
-  if (!authStore.user || !community.value) return false
-  return authStore.user.id === community.value.user_id
+    if (!authStore.user || !community.value) return false
+    return authStore.user.id === community.value.user_id
 })
 
-// === COMMUNITY ACTIONS ===
-
 function goEdit() {
-  router.push(`/communities/${route.params.id}/edit`)
+    router.push(`/communities/${route.params.id}/edit`)
 }
 
-function confirmDelete() {
-  if (confirm(`Are you sure you want to delete the community "${community.value.name}"? This action cannot be undone.`)) {
-    deleteCommunity()
-  }
+function showCommunityDeleteModal() {
+    if (community.value) {
+        deleteType.value = 'community'
+        deleteTarget.value = community.value
+        showDeleteModal.value = true
+    }
 }
 
-async function deleteCommunity() {
-  await communityStore.deleteCommunity(Number(route.params.id))
-  router.push('/communities')
+async function executeDelete() {
+    const type = deleteType.value;
+    const target = deleteTarget.value;
+    const communityId = Number(route.params.id); 
+
+    closeModal(); 
+    
+    if (!target) {
+        console.warn("Deletion target is missing.");
+        return;
+    }
+
+    if (type === 'community') {
+        try {
+            await communityStore.deleteCommunity(communityId)
+            // alert('Community successfully deleted.'); 
+            router.push('/communities')
+        } catch (error) {
+            console.error("Error deleting community:", error)
+            alert('Failed to delete community. Please try again.'); 
+        }
+    } else if (type === 'post') {
+        try {
+            await communityPostStore.deletePost(communityId, target.id);
+            // alert(`Post "${target.title}" successfully deleted.`); 
+            await communityPostStore.fetchPosts(communityId);
+        } catch (error) {
+            console.error("Error deleting post:", error);
+            alert('Failed to delete post. Please try again.'); 
+        }
+    }
 }
 
 // === POST ACTIONS ===
 
 function goCreatePost() {
-  router.push(`/communities/${route.params.id}/posts/create`)
+    router.push(`/communities/${route.params.id}/posts/create`)
 }
 
-// Di CommunityDetailPage.vue
-
-// ...
 function goPostDetail(post) {
-  // Ambil Community ID dari route saat ini
-  const communityId = Number(route.params.id); 
-
-  router.push({
-    name: 'community-post-detail', 
-    
-    params: {
-      communityId: communityId, 
-      postId: post.id 
-    }
-  });
+    const communityId = Number(route.params.id); 
+    router.push({
+        name: 'community-post-detail', 
+        params: {
+            communityId: communityId, 
+            postId: post.id 
+        }
+    });
 }
+
 function handleEditPost(post) {
-  const communityId = Number(route.params.id);
-  router.push({
-    name: 'community-post-edit',
-    params: {
-      communityId: communityId,
-      postId: post.id
-    }
-  });
+    const communityId = Number(route.params.id);
+    router.push({
+        name: 'community-post-edit',
+        params: {
+            communityId: communityId,
+            postId: post.id
+        }
+    });
 }
 
-
-async function handleDeletePost(post) {
-  const communityId = Number(route.params.id);
-
-  if (confirm(`Are you sure you want to delete the post "${post.title}"?`)) {
-    await communityPostStore.deletePost(communityId, post.id);
-    await communityPostStore.fetchPosts(communityId);
-  }
+function showPostDeleteModal(post) {
+    deleteType.value = 'post'
+    deleteTarget.value = post
+    showDeleteModal.value = true
 }
-
 </script>

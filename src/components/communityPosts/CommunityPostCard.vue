@@ -58,7 +58,7 @@
 
 
 <script setup>
-import { computed, ref } from "vue"; // Import 'ref' untuk mengontrol dropdown
+import { computed, ref } from "vue"; 
 
 const props = defineProps({
   post: {
@@ -70,7 +70,6 @@ const props = defineProps({
 
 const emit = defineEmits(['select', 'edit', 'delete']);
 
-// State untuk mengontrol visibilitas dropdown menu
 const showMenu = ref(false);
 
 const authorName = computed(() => {
@@ -82,13 +81,14 @@ const formattedDate = computed(() => {
   
   try {
     const d = new Date(props.post.created_at);
-    // Format tanggal ke Bahasa Indonesia (seperti permintaan sebelumnya)
-    return new Intl.DateTimeFormat('id-ID', {
+    
+    return new Intl.DateTimeFormat('en-US', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: true
     }).format(d);
   } catch (error) {
     console.error('Invalid date:', props.post.created_at);

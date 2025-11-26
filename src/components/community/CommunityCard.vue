@@ -11,7 +11,7 @@
       v-if="community.isOwner"
       class="absolute top-4 right-4 bg-primary text-white text-xs font-semibold px-3 py-0.5 rounded-full shadow"
     >
-      Milik Anda
+      Your Community
     </span>
 
     <!-- Nama komunitas -->

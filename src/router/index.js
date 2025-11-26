@@ -7,6 +7,9 @@ import ArticleCreate from '../views/ArticleCreate.vue';
 import ArticleEdit from '../views/ArticleEdit.vue';
 import ArticleDelete from '../views/ArticleDelete.vue';
 
+//new
+import ArticleDetail from '../views/ArticleDetail.vue';
+
 const routes = [
   { path: '/register', component: Register },
   { path: '/login', component: Login },
@@ -30,10 +33,19 @@ const routes = [
   name: "article-delete",
   component: ArticleDelete,
 },
+  
+//new
+{
+  path: "/articles/:id",
+  name: "article-detail",
+  component: ArticleDetail,
+},
+
 ];
 
 export default createRouter({
   history: createWebHistory(),
   routes,
 });
+
 

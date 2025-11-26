@@ -81,14 +81,14 @@ function showDetail(bookmark) {
   showDetailModal.value = true;
 }
 
-function navigateToPost(bookmark) {
+function navigateToPostDetail(postId) {
   showDetailModal.value = false;
-  router.push('/');
+  router.push({ name: 'post-detail', params: { id: postId } });
 }
 
-function navigateToArticle(bookmark) {
+function navigateToArticleDetail(articleId) {
   showDetailModal.value = false;
-  router.push('/articles');
+  router.push({ name: 'article-detail', params: { id: articleId } });
 }
 
 async function removeItem(bookmarkId, type, itemId) {
@@ -397,17 +397,16 @@ const filteredBookmarks = computed(() => {
 
         <!-- Posts Section -->
         <div v-if="detailBookmark.posts && detailBookmark.posts.length > 0" class="mb-6">
-          <div class="flex items-center justify-between mb-3">
+          <div class="mb-3">
             <h3 class="text-sm font-bold text-blueHeadline uppercase tracking-wider">Posts ({{ detailBookmark.posts.length }})</h3>
-            <button @click="navigateToPost(detailBookmark)" class="text-xs font-bold text-blueHeadline hover:text-bluePrimary flex items-center gap-1">
-              View All Posts
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-            </button>
           </div>
           <div class="space-y-3">
-            <div v-for="post in detailBookmark.posts" :key="post.id" class="bg-blue-50 border border-blue-100 rounded-xl p-4 group relative">
+            <div 
+              v-for="post in detailBookmark.posts" 
+              :key="post.id" 
+              class="bg-blue-50 border border-blue-100 rounded-xl p-4 group relative cursor-pointer hover:bg-blue-100 transition"
+              @click="navigateToPostDetail(post.id)"
+            >
               <button @click.stop="removeItem(detailBookmark.id, 'post', post.id)" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition p-1 hover:bg-blue-200 rounded" title="Remove">
                 <svg class="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -421,17 +420,16 @@ const filteredBookmarks = computed(() => {
 
         <!-- Articles Section -->
         <div v-if="detailBookmark.articles && detailBookmark.articles.length > 0" class="mb-6">
-          <div class="flex items-center justify-between mb-3">
+          <div class="mb-3">
             <h3 class="text-sm font-bold text-green-700 uppercase tracking-wider">Articles ({{ detailBookmark.articles.length }})</h3>
-            <button @click="navigateToArticle(detailBookmark)" class="text-xs font-bold text-green-700 hover:text-green-800 flex items-center gap-1">
-              View All Articles
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-            </button>
           </div>
           <div class="space-y-3">
-            <div v-for="article in detailBookmark.articles" :key="article.id" class="bg-green-50 border border-green-100 rounded-xl p-4 group relative">
+            <div 
+              v-for="article in detailBookmark.articles" 
+              :key="article.id" 
+              class="bg-green-50 border border-green-100 rounded-xl p-4 group relative cursor-pointer hover:bg-green-100 transition"
+              @click="navigateToArticleDetail(article.id)"
+            >
               <button @click.stop="removeItem(detailBookmark.id, 'article', article.id)" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition p-1 hover:bg-green-200 rounded" title="Remove">
                 <svg class="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -470,6 +468,7 @@ const filteredBookmarks = computed(() => {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
